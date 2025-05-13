@@ -1,45 +1,45 @@
 <script>
   import { Card } from "flowbite-svelte";
-  // Retrieved from +server.js load function
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+
   export let data;
-  // biome-ignore lint/style/useConst: In svelte, "let" is used for reactivity
   let { recipes } = data;
 
   // Search query state
-  // biome-ignore lint/style/useConst: In svelte, "let" is used for reactivity
-    let search = "";
-  /**
-     * @type {HTMLInputElement}
-     */
+  let search = "";
+  /** @type {HTMLInputElement} */
   let searchInput;
 
-  // Reactive filtered list based on search input,
-  // now including ingredient names in the match
-  $: filteredRecipes = recipes.filter((/** @type {{ title: string; subtitle: string; recipeIngredients: { name: string; }[]; }} */ recipe) => {
-    const term = search.trim().toLowerCase();
-    if (!term) return true;
-
-    const inTitle = recipe.title.toLowerCase().includes(term);
-    const inSubtitle = recipe.subtitle.toLowerCase().includes(term);
-    const inIngredients = recipe.recipeIngredients?.some((/** @type {{ name: string; }} */ ing) =>
-        ing.name.toLowerCase().includes(term)
-      );
-
-    return inTitle || inSubtitle || inIngredients;
+  // Initialize search from URL once on mount
+  onMount(() => {
+    search = $page.url.searchParams.get('search') || '';
   });
 
-  // Prevent form submission reload
-  /**
-     * @param {{ preventDefault: () => void; }} event
-     */
+  // Update browser URL without navigation on search change
+  $: if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (search) params.set('search', search);
+    else params.delete('search');
+    const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+    history.replaceState(null, '', newUrl);
+  }
+
+  // Reactive filtered list based on search input
+  $: filteredRecipes = recipes.filter(recipe => {
+    const term = search.trim().toLowerCase();
+    if (!term) return true;
+    return (
+      recipe.title.toLowerCase().includes(term) ||
+      recipe.subtitle.toLowerCase().includes(term) ||
+      recipe.recipeIngredients?.some(ing => ing.name.toLowerCase().includes(term))
+    );
+  });
+
   function handleSearch(event) {
     event.preventDefault();
   }
 
-  // Keyboard shortcut handler for Cmd+K / Ctrl+K
-  /**
-     * @param {{ metaKey: any; ctrlKey: any; key: string; preventDefault: () => void; }} event
-     */
   function handleShortcut(event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
