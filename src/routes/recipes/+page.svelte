@@ -1,30 +1,45 @@
 <script>
   import { Card } from "flowbite-svelte";
-
   // Retrieved from +server.js load function
   export let data;
+  // biome-ignore lint/style/useConst: In svelte, "let" is used for reactivity
   let { recipes } = data;
 
   // Search query state
-  let search = "";
+  // biome-ignore lint/style/useConst: In svelte, "let" is used for reactivity
+    let search = "";
+  /**
+     * @type {HTMLInputElement}
+     */
   let searchInput;
 
-  // Reactive filtered list based on search input
-  $: filteredRecipes = recipes.filter(recipe => {
+  // Reactive filtered list based on search input,
+  // now including ingredient names in the match
+  $: filteredRecipes = recipes.filter((/** @type {{ title: string; subtitle: string; recipeIngredients: { name: string; }[]; }} */ recipe) => {
     const term = search.trim().toLowerCase();
     if (!term) return true;
-    return (
-      recipe.title.toLowerCase().includes(term) ||
-      recipe.subtitle.toLowerCase().includes(term)
-    );
+
+    const inTitle = recipe.title.toLowerCase().includes(term);
+    const inSubtitle = recipe.subtitle.toLowerCase().includes(term);
+    const inIngredients = recipe.recipeIngredients?.some((/** @type {{ name: string; }} */ ing) =>
+        ing.name.toLowerCase().includes(term)
+      );
+
+    return inTitle || inSubtitle || inIngredients;
   });
 
   // Prevent form submission reload
+  /**
+     * @param {{ preventDefault: () => void; }} event
+     */
   function handleSearch(event) {
     event.preventDefault();
   }
 
   // Keyboard shortcut handler for Cmd+K / Ctrl+K
+  /**
+     * @param {{ metaKey: any; ctrlKey: any; key: string; preventDefault: () => void; }} event
+     */
   function handleShortcut(event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
@@ -51,7 +66,7 @@
         id="search-input"
         bind:this={searchInput}
         bind:value={search}
-        placeholder="Finn noe digg"
+        placeholder="oppskrift / ingrediens"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
       />
     </div>
