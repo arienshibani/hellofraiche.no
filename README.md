@@ -1,4 +1,4 @@
-# Hallo Fresh 🥛
+# Hallo Fraiche 🥛
 
 Weekly meal plan services such as [HelloFresh](https://www.hellofresh.no/) and [Adams](https://www.adamsmatkasse.no/) are expensive. So I'm compiling my own list of tasty, budget-friendly recipes to help plan my weekly meals.
 

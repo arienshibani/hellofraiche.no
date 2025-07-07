@@ -18,7 +18,7 @@
 >
   <NavBrand href="/">
     <div class="text-2xl text-black font-extrabold italic ml-2">
-      HALLO FRESH
+      HALLO FRAICHE
     </div>
   </NavBrand>
   <NavHamburger on:click={toggle} />
