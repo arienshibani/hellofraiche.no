@@ -23,6 +23,7 @@ export async function DELETE({ params }) {
 export async function PUT({ params, request }) {
     const db = await getDatabase();
     let id = params.id;
+    // Ensure id is a string
     if (typeof id !== 'string') id = String(id);
     const updatedRecipe = await request.json();
 

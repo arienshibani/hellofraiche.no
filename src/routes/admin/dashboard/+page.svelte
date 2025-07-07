@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import toast from 'svelte-french-toast';
   export let data;
   let recipes = data.recipes;
 
@@ -45,6 +46,19 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updated)
         });
+        if (res.ok) {
+          const { insertedId } = await res.json();
+          toast.success(`Lagt til ny oppskrift: ${updated.title || 'N/A'}`);
+          // Add the new recipe to the recipes array
+          recipes = [
+            { ...updated, _id: insertedId },
+            ...recipes
+          ];
+          closeModal();
+        } else {
+          error = 'Error saving';
+          toast.error('Feilet lagring');
+        }
       } else {
         // @ts-ignore
         res = await fetch(`/admin/dashboard/api/recipes/${editingRecipe._id}`, {
@@ -52,34 +66,40 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updated)
         });
-      }
-      if (res.ok) {
-        alert(isCreating ? 'Created!' : 'Saved!');
-        closeModal();
-        location.reload();
-      } else {
-        error = 'Error saving';
+        if (res.ok) {
+          toast.success(`Oppdatert oppskrift: ${updated.title || editingRecipe.title || 'Untitled Recipe'}`);
+          // Update the recipe in the recipes array
+          // @ts-ignore
+          recipes = recipes.map(r =>
+            // @ts-ignore
+            r._id === editingRecipe._id ? { ...r, ...updated, _id: editingRecipe._id } : r
+          );
+          closeModal();
+        } else {
+          error = 'Error saving';
+          toast.error('Feilet lagring');
+        }
       }
     } catch (e) {
       error = 'Invalid JSON: ' + (e instanceof Error ? e.message : e);
+      toast.error(error);
     }
   }
 
   // @ts-ignore
   async function deleteRecipe(recipe) {
-
-    console.log(recipe)
-
     let id = recipe._id;
     if (typeof id === 'object' && id.$oid) id = id.$oid;
-    console.log('Client-side delete, id:', id, 'raw _id:', recipe._id);
     if (!confirm(`Are you sure you want to delete "${recipe.title}"?`)) return;
     const res = await fetch(`/admin/dashboard/api/recipes/${id}`, {
       method: 'DELETE'
     });
     if (res.ok) {
-      alert('Deleted!');
-      location.reload();
+      toast.success(`Slettet oppskrift "${recipe.title || undefined}""`);
+      // Remove the deleted recipe from the recipes array
+      // @ts-ignore
+      recipes = recipes.filter(r => r._id !== id);
+      closeModal();
     } else {
       let msg = 'Error deleting';
       try {
@@ -89,7 +109,7 @@
         msg += ' (no error details)';
       }
       console.error('Delete failed', res.status, res.statusText, await res.text());
-      alert(msg);
+      toast.error(msg);
     }
   }
 </script>
