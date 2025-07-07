@@ -28,6 +28,7 @@
 		"flowbite": "^1.6.5",
 		"flowbite-svelte": "^0.36.5",
 		"mongodb": "^5.8.0",
+		"nanoid": "^5.1.5",
 		"saslprep": "^1.0.3",
 		"svelte-french-toast": "^1.2.0",
 		"svelte-json-tree": "^2.2.0"

@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import toast from 'svelte-french-toast';
+  import { nanoid } from 'nanoid';
   export let data;
   let recipes = data.recipes;
 
@@ -22,7 +23,16 @@
 
   function openCreateModal() {
     editingRecipe = null;
-    jsonString = JSON.stringify({ title: '', subtitle: '', /* add other default fields if needed */ }, null, 2);
+    jsonString = JSON.stringify({
+      title: '',
+      subtitle: '',
+      prepTime: 0,
+      portions: 0,
+      steps: [],
+      mealPlanId: '',
+      recipeIngredients: [],
+      recipeId: nanoid()
+    }, null, 2);
     error = '';
     showModal = true;
     isCreating = true;
@@ -114,36 +124,38 @@
   }
 </script>
 
-<h2 class="text-2xl font-bold mt-8 mb-4">Admin Dashboard</h2>
-<div class="flex items-center mb-4">
-  <button
-    class="flex items-center gap-2 border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-    on:click={openCreateModal}
-    aria-label="Add new recipe"
-  >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-    <span class="font-medium">New Recipe</span>
-  </button>
-</div>
-<div class="max-h-[70vh] overflow-y-auto bg-gray-50 rounded-lg shadow p-4 flex flex-col gap-4">
-  {#each recipes as recipe}
-    <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
-      <div>
-        <div class="font-bold text-lg group-hover:text-blue-700 transition-colors">{recipe.title}</div>
-        <div class="text-gray-600">{recipe.subtitle}</div>
+<div class="flex flex-col items-center w-full">
+  <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
+    <h2 class="text-2xl font-bold flex-1">Admin Dashboard</h2>
+    <button
+      class="flex items-center gap-2 border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+      on:click={openCreateModal}
+      aria-label="Add new recipe"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+      <span class="font-medium">New Recipe</span>
+    </button>
+  </div>
+  <div class="max-h-[70vh] overflow-y-auto bg-gray-50 rounded-lg shadow p-4 flex flex-col gap-4 w-full max-w-1xl">
+    {#each recipes as recipe}
+      <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
+        <div>
+          <div class="font-bold text-lg group-hover:text-blue-700 transition-colors">{recipe.title}</div>
+          <div class="text-gray-600">{recipe.subtitle}</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" on:click={() => openModal(recipe)}>Rediger Oppskrift ✍️</button>
+          <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" on:click={() => deleteRecipe(recipe)}>Slett Oppskrift 🗑️</button>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" on:click={() => openModal(recipe)}>Edit</button>
-        <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" on:click={() => deleteRecipe(recipe)}>Delete</button>
-      </div>
-    </div>
-  {/each}
+    {/each}
+  </div>
 </div>
 
 {#if showModal}
   <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative">
-      <h3 class="text-xl font-bold mb-4">{isCreating ? 'Create New Recipe' : 'Edit Recipe JSON'}</h3>
+      <h3 class="text-xl font-bold mb-4">{isCreating ? 'Legg til ny oppskrift' : 'Rediger oppskrift'}</h3>
       <textarea class="w-full border rounded p-2 font-mono" rows="18" bind:value={jsonString}></textarea>
       {#if error}
         <div class="text-red-600 mt-2">{error}</div>
