@@ -18,11 +18,14 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Install pnpm
+      run: npm install -g pnpm
+
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
     - name: Run update script
-      run: node ./scripts/price-scanner.js
+      run: pnpm exec node ./scripts/price-scanner.js
       env:
         MONGO_URI: ${{ secrets.MONGO_URI }}
         KASSALAPP_API_KEY: ${{ secrets.KASSALAPP_API_KEY }}
