@@ -7,6 +7,7 @@
     NavUl,
     NavHamburger,
   } from "flowbite-svelte";
+  import { Toaster } from 'svelte-french-toast';
 </script>
 
 <Navbar
@@ -35,3 +36,4 @@
 <br />
 
 <slot />
+<Toaster />
