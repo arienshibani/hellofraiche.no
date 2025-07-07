@@ -32,9 +32,6 @@ importers:
       svelte-french-toast:
         specifier: ^1.2.0
         version: 1.2.0(svelte@3.59.2)
-      svelte-json-tree:
-        specifier: ^2.2.0
-        version: 2.2.0(svelte@3.59.2)
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^2.0.0
@@ -985,11 +982,6 @@ packages:
     engines: {node: ^12.20 || ^14.13.1 || >= 16}
     peerDependencies:
       svelte: ^3.19.0 || ^4.0.0
-
-  svelte-json-tree@2.2.0:
-    resolution: {integrity: sha512-zcfepTrJ6xhpdgRZEujmiFh+ainRw7HO4Bsoh8PMAsm7fkgUPtnrZi3An8tmCFY8jajYhMrauHsd1S1XTeuiCw==}
-    peerDependencies:
-      svelte: ^4.0.0
 
   svelte-preprocess@5.1.4:
     resolution: {integrity: sha512-IvnbQ6D6Ao3Gg6ftiM5tdbR6aAETwjhHV+UKGf5bHGYR69RQvF1ho0JKPcbUON4vy4R7zom13jPjgdOWCQ5hDA==}
@@ -1952,10 +1944,6 @@ snapshots:
       svelte: 3.59.2
 
   svelte-hmr@0.15.3(svelte@3.59.2):
-    dependencies:
-      svelte: 3.59.2
-
-  svelte-json-tree@2.2.0(svelte@3.59.2):
     dependencies:
       svelte: 3.59.2
 

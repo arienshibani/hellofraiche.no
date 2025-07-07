@@ -19,7 +19,7 @@
   />
   <p class="pl-8 relative text-xl">
     Velg en ukemeny som passer deg og antallet personer du vil lage mat til, og
-    Hallo Fresh genererer handlelisten for deg automatisk.
+    Hallo Fraiche genererer handlelisten for deg automatisk.
   </p>
 </div>
 
