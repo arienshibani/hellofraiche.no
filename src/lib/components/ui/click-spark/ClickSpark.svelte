@@ -155,6 +155,7 @@
 <div 
   class="click-spark-container"
   on:click={handleClick}
+  on:pointerdown={handleClick}
 >
   <canvas
     bind:this={canvas}

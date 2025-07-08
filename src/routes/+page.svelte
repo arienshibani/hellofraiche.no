@@ -3,6 +3,7 @@
     import { Card } from "flowbite-svelte";
     import InfiniteScroll from "$lib/components/ui/infinite-scroll/InfiniteScroll.svelte";
     import { goto } from "$app/navigation";
+    import FeatureList from "$lib/components/ui/feature-list/FeatureList.svelte";
 
     // Retreived from +server.js load function
     export let data;
@@ -15,93 +16,29 @@
         mediaQ = onPhone.matches ? "xl" : "xs";
     }
 
-    const message = "%c https://github.com/arienshibani %c";
-    const style1 = "background: linear-gradient(to right, red, orange);";
-    const style2 = "color: white; font-weight: bold;";
 
     const recipeCount = data.recipes.length;
     const mealPlanCount = data.mealplans.length;
 
 </script>
 
-<section class="dark:bg-gray-900">
+<section class="dark:bg-gray-900 relative z-10">
 
 
-    <div class="flex flex-col items-center justify-center w-full p-4 fixed mt-20">
-        <div class="text-4xl md:text-6xl font-bold text-black text-center">
-            Ka <span class="text-orange-400">faaaen</span> skal du
-        </div>
 
-        <div class="text-4xl md:text-6xl font-bold relative text-center">
-            <span
-                class="bg-orange-300 absolute -bottom-1 h-[35%] w-[101%] mr-[1px]"
-            ></span>
-            <span class="text-black relative"> ha til middag idag?</span>
-        </div>
 
-        <div class="pt-111 pb-6 pt-12">
-            <div class="flex items-start justify-center">
-                <div
-                    class="h-[200px] w-[400px] bg-white rounded-l-xl flex flex-col items-start p-5"
-                >
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3">
-                            <svg
-                                class="w-5 h-5 text-black mt-0.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                ><path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                ></path></svg
-                            >
-                            <span class="text-black">
-                                {mealPlanCount} Ukemenyer og {recipeCount} oppskrifter</span
-                            >
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <svg
-                                class="w-5 h-5 text-black mt-0.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                ><path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                ></path></svg
-                            >
-                            <span class="text-black"
-                                >Velg selv hvor og når du handler inn</span
-                            >
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <svg
-                                class="w-5 h-5 text-black mt-0.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                ><path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                ></path></svg
-                            >
-                            <span class="text-black"
-                                >Spar penger, ingen måndlige avgifter
-                            </span>
-                        </div>
 
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <FeatureList
+        title="Go middag! 👋"
+        features={[
+            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter`,
+            "Prisoversikt på alle ukemenyer / oppskrifter",
+            "Velg selv når du handler inn og hvordan",
+            "Spar penger, ingen måndlige avgifter",
+            "100% gratis og åpen kildekode",
+
+        ]}
+    />
 
     <InfiniteScroll
     width="100%"
@@ -116,10 +53,10 @@
     pauseOnHover={false}
 >
     <svelte:fragment slot="default" let:item>
-                                <Card class="w-full max-w-[380px] h-[160px] mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
+                                <Card class="w-full max-w-[280px] h-[160px] mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
                 <div class="p-4 h-full flex flex-col justify-between">
                     <div class="flex-1 flex items-center justify-center">
-                        <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white truncate-title text-center">
+                        <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
                             {item.title}
                         </h5>
                     </div>
@@ -131,5 +68,46 @@
                 </div>
             </Card>
     </svelte:fragment>
-</InfiniteScroll>
-</section>
+  </InfiniteScroll>
+  </section>
+
+<style>
+    .truncate-title {
+        white-space: nowrap;
+        font-size: clamp(0.4rem, 1.5vw, 1.25rem);
+        line-height: 1.2;
+        max-width: 100%;
+        height: 1.2em; /* Fixed height for 1 line */
+        word-wrap: break-word;
+    }
+
+    .truncate-subtitle {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    /* Aurora background styling */
+    :global(.aurora-container) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1;
+        background: transparent;
+    }
+
+    section {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        background: transparent;
+    }
+
+    /* Make sure content is visible over aurora */
+    .text-black {
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+</style>
