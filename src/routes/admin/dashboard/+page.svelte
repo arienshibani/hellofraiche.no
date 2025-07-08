@@ -400,8 +400,8 @@
         <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-900 text-sm">
           Ingredienser lagt til her vil hente pris og næringsinfo via <a href="https://kassal.app/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">kassal.app</a>. Data oppdateres hver natt, og vil hentes så lenge EAN-nummeret er korrekt.
         </div>
-        {#each allIngredients as ingredient}
-          <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex flex-col">
+        {#each allIngredients as ingredient (ingredient._id)}
+          <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow transition-opacity min-h-[100px] p-4 flex flex-col">
             <div class="flex items-center justify-between">
               <div class="font-bold text-lg">{ingredient.name}</div>
               <div class="flex gap-2">

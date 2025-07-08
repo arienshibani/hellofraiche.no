@@ -6,14 +6,14 @@
   import { ImagePlaceholder } from "flowbite-svelte";
 </script>
 
-<h1 class="text-5xl text-center pt-16 font-bold">Sånn funker det 💡</h1>
+<h1 class="text-5xl text-center pt-16 font-bold">Billig Mat 🍽️</h1>
 
-<h1 class="text-3xl text-center p-2 pt-20">1. Velg middagsplan 🍽</h1>
+<h1 class="text-3xl text-center p-2 pt-20">1. Velg middagsplan ✍️</h1>
 <div
   class="gridsetup grid p-12 grid-cols-2 gap-4 items-center max-w-4xl mt-0 m-auto"
 >
   <img
-    class="max-w-4 max-h-[300px] rounded-sm"
+    class="max-h-[300px] rounded-sm"
     src="https://images.squarespace-cdn.com/content/53b839afe4b07ea978436183/1608506201082-GU22QYZJC5TWXRSY24RX/traditional-food-around-the-world-Travlinmad.jpg?content-type=image%2Fjpeg"
     alt="food that contains creme fraiche"
   />
@@ -39,7 +39,7 @@
     <ImagePlaceholder imgHeight={60} class="mt-8" />
   </template>
   <img
-    class="max-w-4 max-h-[300px] rounded-sm"
+    class="max-h-[300px] rounded-sm"
     src="https://thehappyfoodie.co.uk/wp-content/uploads/2021/08/pasta_8_215_img_s900x0_c1931x1128_l0x643.jpg"
     alt="food that contains creme fraiche"
   />

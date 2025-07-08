@@ -8,6 +8,7 @@
         ArrowDownCircle,
     } from "svelte-heros-v2";
     import { goto } from "$app/navigation";
+    import { formatAmount } from "$lib/util/formatAmount.js";
 
     // Load data from +page.server.js
     $: ({ recipe, mealPlan } = data);
@@ -96,7 +97,7 @@
 
         {#each recipe.recipeIngredients as ingredient}
             <p class="pt-6 text-lg bigPaddingOnLargeScreens">
-                {ingredient.amount * count}{ingredient.measurement}
+                {formatAmount(ingredient.amount * count, ingredient.measurement)}
                 <span class="pl-4 text-left">{ingredient.name}</span>
             </p>
         {/each}
