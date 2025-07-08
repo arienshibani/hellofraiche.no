@@ -5,6 +5,7 @@
         MinusCircle,
     } from "svelte-heros-v2";
     import { goto } from "$app/navigation";
+    import { formatAmount } from "$lib/util/formatAmount.js";
 
     import { Card, Listgroup, Checkbox } from "flowbite-svelte";
 
@@ -129,7 +130,7 @@
             {item.name}
             <div class="">
                 <Checkbox class="m-2 checked:bg-slate-900 outline-black" />
-                {item.amount * count}{item.measurement}
+                {formatAmount(item.amount * count, item.measurement)}
             </div>
         </Listgroup>
         <br />

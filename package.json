@@ -27,8 +27,10 @@
 		"classnames": "^2.3.2",
 		"flowbite": "^1.6.5",
 		"flowbite-svelte": "^0.36.5",
+		"gsap": "^3.13.0",
 		"mongodb": "^5.8.0",
 		"nanoid": "^5.1.5",
+		"ogl": "^1.0.11",
 		"saslprep": "^1.0.3",
 		"svelte-french-toast": "^1.2.0"
 	}
