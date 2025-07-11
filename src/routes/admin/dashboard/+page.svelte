@@ -343,21 +343,21 @@
   }
 </script>
 
-<div class="flex flex-col items-center w-full">
+<div class="flex flex-col items-center w-full dark:bg-gray-900 dark:text-white">
   <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
-    <h2 class="text-2xl font-bold flex-1">Admin Dashboard</h2>
+    <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
   </div>
   <!-- Recipes Collapsible -->
   <div class="w-full  mt-8 mb-4">
-    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 rounded-t-lg font-bold text-lg" on:click={() => showRecipes = !showRecipes}>
+    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 dark:bg-gray-800 rounded-t-lg font-bold text-lg dark:text-white" on:click={() => showRecipes = !showRecipes}>
       <span>Oppskrifter</span>
       <span>{showRecipes ? '▲' : '▼'}</span>
     </button>
     {#if showRecipes}
-      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
+      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
         <div class="flex items-center mb-4 justify-between flex-row-reverse">
           <button
-            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
             on:click={openCreateModal}
             aria-label="Add new recipe"
           >
@@ -366,14 +366,14 @@
           </button>
         </div>
         {#each recipes as recipe}
-          <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
+          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
             <div>
-              <div class="font-bold text-lg group-hover:text-blue-700 transition-colors">{recipe.title}</div>
-              <div class="text-gray-600">{recipe.subtitle}</div>
+              <div class="font-bold text-lg group-hover:text-blue-700 transition-colors dark:text-white">{recipe.title}</div>
+              <div class="text-gray-600 dark:text-gray-300">{recipe.subtitle}</div>
             </div>
             <div class="flex gap-2">
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" on:click={() => openModal(recipe)}>Rediger Oppskrift ✍️</button>
-              <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded" on:click={() => openDeleteModal(recipe, 'recipe')}>Slett Oppskrift 🗑️</button>
+              <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded dark:bg-blue-900" on:click={() => openModal(recipe)}>Rediger Oppskrift ✍️</button>
+              <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded dark:bg-red-900" on:click={() => openDeleteModal(recipe, 'recipe')}>Slett Oppskrift 🗑️</button>
             </div>
           </div>
         {/each}
@@ -382,34 +382,34 @@
   </div>
   <!-- Ingredient Collapsible -->
   <div class="w-full max-w-1xl mt-8">
-    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 rounded-t-lg font-bold text-lg" on:click={() => showIngredients = !showIngredients}>
+    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 dark:bg-gray-800 rounded-t-lg font-bold text-lg dark:text-white" on:click={() => showIngredients = !showIngredients}>
       <span>Ingredienser</span>
       <span>{showIngredients ? '▲' : '▼'}</span>
     </button>
     {#if showIngredients}
-      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
+      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
         <div class="flex items-center mb-4 justify-between flex-row-reverse">
           <button
-            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
             on:click={openNewIngredient}
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             <span class="font-medium">Ny ingrediens</span>
           </button>
         </div>
-        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-900 text-sm">
+        <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-400 rounded text-blue-900 dark:text-blue-100 text-sm">
           Ingredienser lagt til her vil hente pris og næringsinfo via <a href="https://kassal.app/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">kassal.app</a>. Data oppdateres hver natt, og vil hentes så lenge EAN-nummeret er korrekt.
         </div>
         {#each allIngredients as ingredient (ingredient._id)}
-          <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow transition-opacity min-h-[100px] p-4 flex flex-col">
+          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow transition-opacity min-h-[100px] p-4 flex flex-col">
             <div class="flex items-center justify-between">
-              <div class="font-bold text-lg">{ingredient.name}</div>
+              <div class="font-bold text-lg dark:text-white">{ingredient.name}</div>
               <div class="flex gap-2">
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm" on:click={() => openEditIngredient(ingredient)}>Rediger ingrediens ✍️</button>
-                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm" on:click={() => openDeleteModal(ingredient, 'ingredient')}>Slett 🗑️</button>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm dark:bg-blue-900" on:click={() => openEditIngredient(ingredient)}>Rediger ingrediens ✍️</button>
+                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm dark:bg-red-900" on:click={() => openDeleteModal(ingredient, 'ingredient')}>Slett 🗑️</button>
               </div>
             </div>
-            <div class="text-gray-600 text-sm">
+            <div class="text-gray-600 dark:text-gray-300 text-sm">
               EAN: {ingredient.ean || 'N/A'}
               {#if ingredient.data && ingredient.data.products && ingredient.data.products.length > 0}
                 {#each [ingredient.data.products[0]] as product}

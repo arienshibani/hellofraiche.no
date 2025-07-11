@@ -141,6 +141,8 @@
 
 <style>
   .infinite-scroll-wrapper {
+    position: fixed;
+    top: -350px;
     max-height: var(--max-height);
   }
 

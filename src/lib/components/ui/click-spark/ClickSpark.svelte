@@ -153,9 +153,9 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div 
+<div
   class="click-spark-container"
-  on:click={handleClick}
+  on:mousedown={handleClick}
   on:pointerdown={handleClick}
 >
   <canvas

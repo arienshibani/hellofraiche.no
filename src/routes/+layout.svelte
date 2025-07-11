@@ -56,11 +56,13 @@
   function isSmallScreen() {
     return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
   }
+
+  $: sparkColor = isDark ? '#ffe066' : '#ff6b6b'; // yellowish in dark, red in light
 </script>
 
 <div class="relative min-h-screen">
   <ClickSpark
-    sparkColor="#ff6b6b"
+    sparkColor={sparkColor}
     sparkCount={8}
     duration={300}
     easing="ease-out"
@@ -70,11 +72,11 @@
     <Navbar
       let:hidden
       let:toggle
-      style="background: rgb(253 186 140 / 70%); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); backdrop-filter: blur(13px);"
-      class="px-2 bg-slate-400 sm:px-4 py-2.5 fixed w-full z-20 top-0 left-0"
+      style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); backdrop-filter: blur(13px);"
+      class="px-2 bg-white-400 sm:px-4 py-2.5 fixed w-full z-20 top-0 left-0"
     >
       <NavBrand href="/">
-        <div class="text-2xl text-black font-extrabold italic ml-2">
+        <div class="text-2xl  font-extrabold italic ml-2">
           HALLO FRAICHE
         </div>
       </NavBrand>
@@ -88,9 +90,9 @@
       </button>
       <NavHamburger on:click={toggle} />
       <NavUl {hidden}>
-        <NavLi class="text-xl text-black font-bold" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>Ukemenyer</NavLi>
-        <NavLi class="text-xl text-black font-bold" href="/recipes" on:click={(e) => delayedNav(e, '/recipes', toggle)}>Oppskrifter</NavLi>
-        <NavLi class="text-xl text-black font-bold" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>Info</NavLi>
+        <NavLi class="text-xl font-bold" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>Ukemenyer</NavLi>
+        <NavLi class="text-xl font-bold" href="/recipes" on:click={(e) => delayedNav(e, '/recipes', toggle)}>Oppskrifter</NavLi>
+        <NavLi class="text-xl font-bold" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>Info</NavLi>
       </NavUl>
     </Navbar>
     <br />

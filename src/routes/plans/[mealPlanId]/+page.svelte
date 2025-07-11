@@ -52,9 +52,12 @@
     ];
 </script>
 
+
+<div class="dark:text-gray-200 dark:bg-gray-900">
+
 <div class="grid mainContent gap-x-40 p-10">
-    <Card class="h-max justify-self-end border-none shadow-none">
-        <h1 class="text-slate-900 text-4xl text-center pt-16 pb-5">
+    <Card class="h-max justify-self-end border-none shadow-none dark:bg-gray-800">
+        <h1 class="text-slate-900 text-4xl text-center pt-16 pb-5 dark:text-white">
             {mealPlan.name}
         </h1>
 
@@ -84,7 +87,7 @@
             </a>
         </Listgroup>
 
-        <p class="text-center text-gray-900 mt-8 mb-4">Antall Personer</p>
+        <p class="text-center text-gray-900 mt-8 mb-4 dark:text-white">Antall Personer</p>
 
         <div class="flex justify-evenly m-1">
             <button on:click={handleMinus}>
@@ -116,7 +119,7 @@
         
     </Card>
 
-    <Card class="lastColumn h-max shadow-none rounded-sm mt-12 mb-14">
+    <Card class="lastColumn h-max shadow-none rounded-sm mt-12 mb-14 dark:bg-gray-800">
         <h5
             class="text-md tracking-widest text-center leading-none text-gray-900 dark:text-white pb-5"
         >
@@ -150,6 +153,7 @@
             </Listgroup>
         {/if}
     </Card>
+</div>
 </div>
 
 <style>
