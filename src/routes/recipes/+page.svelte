@@ -50,6 +50,12 @@
 
 <svelte:window on:keydown={handleShortcut} />
 
+<svelte:head>
+  <title>Søk etter oppskrifter 🔍</title>
+</svelte:head>
+
+
+
 <h1 class="text-5xl text-center pt-16 pb-20 font-bold">Oppskrifter 🗒️</h1>
 
 <div class="flex justify-center p-10 w-fit m-auto">

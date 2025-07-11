@@ -22,6 +22,11 @@
 
 </script>
 
+<svelte:head>
+    <title>Hello Fraiche 🍽️</title>
+  </svelte:head>
+
+
 <section class="dark:bg-gray-900 relative z-10">
 
 

@@ -6,6 +6,13 @@
   import { ImagePlaceholder } from "flowbite-svelte";
 </script>
 
+
+<svelte:head>
+  <title>Hello Fraiche 🍽️</title>
+</svelte:head>
+
+
+
 <h1 class="text-5xl text-center pt-16 font-bold">Billig Mat 🍽️</h1>
 
 <h1 class="text-3xl text-center p-2 pt-20">1. Velg middagsplan ✍️</h1>

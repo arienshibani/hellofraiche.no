@@ -21,6 +21,11 @@
   $: ({ mealPlans } = data);
 </script>
 
+<svelte:head>
+  <title>Ukemenyer 🗓️ </title>
+</svelte:head>
+
+
 <h1 class="text-5xl text-center pt-16 pb-10 font-bold">Ukemenyer 🗓️</h1>
 
 <!-- Search Bar #TODO: Make a functional search bar here -->
