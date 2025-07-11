@@ -91,7 +91,7 @@
 
       const tick = () => {
         // Apply hover slowdown if hovering
-        const currentSpeed = isHovering ? speedPerFrame * hoverSlowdown : speedPerFrame;
+        const currentSpeed = isHovering && pauseOnHover ? 0 : speedPerFrame;
 
         divItems.forEach((child) => {
           gsap.set(child, {
@@ -162,8 +162,8 @@
   }
 </style>
 
-<div 
-  class="infinite-scroll-wrapper" 
+<div
+  class="infinite-scroll-wrapper"
   bind:this={wrapperRef}
   style="--max-height: {maxHeight}; --width: {width}; --item-min-height: {itemMinHeight}px; --negative-margin: {negativeMargin};"
   transition:fade
@@ -182,4 +182,4 @@
       </div>
     {/each}
   </div>
-</div> 
+</div>

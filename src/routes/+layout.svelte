@@ -13,9 +13,37 @@
   import { goto } from '$app/navigation';
 
   let hidden = true;
+  let isDark = false;
 
-  function isSmallScreen() {
-    return window.matchMedia('(max-width: 640px)').matches;
+  // On mount, set dark mode based on localStorage or system preference
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+      isDark = true;
+      document.documentElement.classList.add('dark');
+    } else if (saved === 'light') {
+      isDark = false;
+      document.documentElement.classList.remove('dark');
+    } else {
+      // No saved preference, use system
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }
+
+  function toggleDark() {
+    isDark = !isDark;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
   // Handler to delay navigation for ClickSpark animation
@@ -23,6 +51,10 @@
     event.preventDefault();
     if (isSmallScreen() && toggle) toggle(); // Only collapse on small screens
     setTimeout(() => goto(href), 300);
+  }
+
+  function isSmallScreen() {
+    return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
   }
 </script>
 
@@ -46,6 +78,14 @@
           HALLO FRAICHE
         </div>
       </NavBrand>
+      <button
+        class="ml-4 text-2xl focus:outline-none"
+        aria-label="Toggle dark mode"
+        on:click={toggleDark}
+        style="background: none; border: none; cursor: pointer;"
+      >
+        {isDark ? '🌙' : '☀️'}
+      </button>
       <NavHamburger on:click={toggle} />
       <NavUl {hidden}>
         <NavLi class="text-xl text-black font-bold" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>Ukemenyer</NavLi>

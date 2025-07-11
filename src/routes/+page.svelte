@@ -22,16 +22,16 @@
 
 </script>
 
-<svelte:head>
-    <title>Hello Fraiche 🍽️</title>
-  </svelte:head>
+    <svelte:head>
+        <title>Hello Fraiche 🍽️</title>
+      </svelte:head>
 
 
 <section class="dark:bg-gray-900 relative z-10">
 
 
 
-
+<!-- 
 
     <FeatureList
         title="Go middag! 👋"
@@ -43,22 +43,23 @@
             "100% gratis og åpen kildekode",
 
         ]}
-    />
+    /> -->
+
 
     <InfiniteScroll
     width="100%"
-    maxHeight="100%"
+    maxHeight=""
     negativeMargin="-2.5em"
     items={data.recipes}
     isTilted={true}
     tiltDirection="right"
     autoplay={true}
-    autoplaySpeed={0.9}
-    autoplayDirection="down"
+    autoplaySpeed={3}
+    autoplayDirection="up"
     pauseOnHover={false}
 >
     <svelte:fragment slot="default" let:item>
-                                <Card class="w-full max-w-[280px] h-[160px] mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
+                                <Card class="w-full max-w-[280px] h-[160px] bg-yellow-100 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
                 <div class="p-4 h-full flex flex-col justify-between">
                     <div class="flex-1 flex items-center justify-center">
                         <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
