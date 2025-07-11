@@ -22,38 +22,31 @@
 
 </script>
 
-<section class="dark:bg-gray-900 relative z-10">
+    <svelte:head>
+        <title>God Middag! 🍽️</title>
+      </svelte:head>
+
+
+<section class="dark:bg-gray-900 bg-white relative z-10">
 
 
 
 
-
-    <FeatureList
-        title="Go middag! 👋"
-        features={[
-            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter`,
-            "Prisoversikt på alle ukemenyer / oppskrifter",
-            "Velg selv når du handler inn og hvordan",
-            "Spar penger, ingen måndlige avgifter",
-            "100% gratis og åpen kildekode",
-
-        ]}
-    />
 
     <InfiniteScroll
     width="100%"
-    maxHeight="100%"
-    negativeMargin="-2.5em"
+    maxHeight=""
+    negativeMargin="-0.9em"
     items={data.recipes}
     isTilted={true}
     tiltDirection="right"
     autoplay={true}
-    autoplaySpeed={0.9}
-    autoplayDirection="down"
+    autoplaySpeed={1.5}
+    autoplayDirection="up"
     pauseOnHover={false}
 >
     <svelte:fragment slot="default" let:item>
-                                <Card class="w-full max-w-[280px] h-[160px] mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
+                                <Card class="w-full max-w-[280px] h-[160px] bg-sky-100 dark:bg-gray-800 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
                 <div class="p-4 h-full flex flex-col justify-between">
                     <div class="flex-1 flex items-center justify-center">
                         <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
@@ -69,18 +62,24 @@
             </Card>
     </svelte:fragment>
   </InfiniteScroll>
-  </section>
+  
+
+
+
+    <FeatureList
+        title="Go middag! 👋"
+        features={[
+            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
+            "Live prisoversikt på alle ukemenyer / oppskrifter",
+            "Søk etter oppskrifter, ingredienser eller ukemenyer",
+        ]}
+    />
+
+
+
+</section>
 
 <style>
-    .truncate-title {
-        white-space: nowrap;
-        font-size: clamp(0.4rem, 1.5vw, 1.25rem);
-        line-height: 1.2;
-        max-width: 100%;
-        height: 1.2em; /* Fixed height for 1 line */
-        word-wrap: break-word;
-    }
-
     .truncate-subtitle {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -106,8 +105,4 @@
         background: transparent;
     }
 
-    /* Make sure content is visible over aurora */
-    .text-black {
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-    }
 </style>

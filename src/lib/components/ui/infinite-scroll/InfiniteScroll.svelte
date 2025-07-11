@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { gsap } from 'gsap';
-  import { Observer } from 'gsap/Observer';
+  // import { Observer } from 'gsap/Observer';
+  import gsapObserver from "gsap/Observer.js";
   import './InfiniteScroll.css';
   import { fade } from 'svelte/transition';
+  const Observer = gsapObserver;
 
   gsap.registerPlugin(Observer);
 
@@ -89,7 +91,7 @@
 
       const tick = () => {
         // Apply hover slowdown if hovering
-        const currentSpeed = isHovering ? speedPerFrame * hoverSlowdown : speedPerFrame;
+        const currentSpeed = isHovering && pauseOnHover ? 0 : speedPerFrame;
 
         divItems.forEach((child) => {
           gsap.set(child, {
@@ -139,6 +141,8 @@
 
 <style>
   .infinite-scroll-wrapper {
+    position: fixed;
+    top: -650px;
     max-height: var(--max-height);
   }
 
@@ -160,8 +164,8 @@
   }
 </style>
 
-<div 
-  class="infinite-scroll-wrapper" 
+<div
+  class="infinite-scroll-wrapper"
   bind:this={wrapperRef}
   style="--max-height: {maxHeight}; --width: {width}; --item-min-height: {itemMinHeight}px; --negative-margin: {negativeMargin};"
   transition:fade
@@ -180,4 +184,4 @@
       </div>
     {/each}
   </div>
-</div> 
+</div>

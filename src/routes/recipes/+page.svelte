@@ -50,9 +50,19 @@
 
 <svelte:window on:keydown={handleShortcut} />
 
-<h1 class="text-5xl text-center pt-16 pb-20 font-bold">Oppskrifter 🗒️</h1>
+<svelte:head>
+  <title>Søk etter oppskrifter 🔍</title>
+</svelte:head>
 
-<div class="flex justify-center p-10 w-fit m-auto">
+
+
+<div class="dark:text-gray-200 dark:bg-gray-900">
+
+
+
+<h1 class="text-5xl text-center pt-24 pb-20 font-bold dark:text-white">Oppskrifter 🗒️</h1>
+
+<div class="flex justify-center p-10 w-fit m-auto dark:bg-gray-900">
   <form class="flex items-center w-full max-w-4xl" on:submit|preventDefault={handleSearch}>
     <label for="search-input" class="sr-only">Søk</label>
     <div class="relative w-full">
@@ -79,15 +89,15 @@
   </form>
 </div>
 
-<div class="flex justify-evenly flex-wrap max-w-5xl m-auto">
+<div class="flex justify-evenly flex-wrap max-w-5xl m-auto dark:bg-gray-900">
   {#each filteredRecipes as recipe}
-    <Card class="border-none shadow-none" padding="sm">
+    <Card class="border-none shadow-none dark:bg-gray-900" padding="sm">
       <div class="flex flex-col items-center pb-4">
         <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{recipe.title}</h5>
         <span class="text-sm text-gray-500 dark:text-gray-400">{recipe.subtitle}</span>
         <div class="flex mt-4 space-x-3 lg:mt-6">
           <a href="/recipes/{recipe.title}">
-            <button class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-fit pr-4 pl-4 m-5">
+            <button class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-fit pr-4 pl-4 m-5 dark:bg-gray-800 dark:text-white dark:border-white">
               Se Oppskrift
             </button>
           </a>
@@ -95,6 +105,7 @@
       </div>
     </Card>
   {/each}
+</div>
 </div>
 
 <style>
