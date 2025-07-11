@@ -115,7 +115,7 @@
     if (!canvas || !canvas.parentElement) return;
 
     const parent = canvas.parentElement;
-    
+
     // Set up resize observer
     resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(parent);
@@ -152,6 +152,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div 
   class="click-spark-container"
   on:click={handleClick}

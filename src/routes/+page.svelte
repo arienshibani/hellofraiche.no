@@ -72,15 +72,6 @@
   </section>
 
 <style>
-    .truncate-title {
-        white-space: nowrap;
-        font-size: clamp(0.4rem, 1.5vw, 1.25rem);
-        line-height: 1.2;
-        max-width: 100%;
-        height: 1.2em; /* Fixed height for 1 line */
-        word-wrap: break-word;
-    }
-
     .truncate-subtitle {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -106,8 +97,4 @@
         background: transparent;
     }
 
-    /* Make sure content is visible over aurora */
-    .text-black {
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-    }
 </style>

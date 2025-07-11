@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { gsap } from 'gsap';
-  import { Observer } from 'gsap/Observer';
+  // import { Observer } from 'gsap/Observer';
+  import gsapObserver from "gsap/Observer.js";
   import './InfiniteScroll.css';
   import { fade } from 'svelte/transition';
+  const Observer = gsapObserver;
 
   gsap.registerPlugin(Observer);
 
