@@ -23,7 +23,7 @@
 </script>
 
     <svelte:head>
-        <title>Hello Fraiche 🍽️</title>
+        <title>God Middag! 🍽️</title>
       </svelte:head>
 
 
@@ -31,30 +31,17 @@
 
 
 
-<!-- 
-
-    <FeatureList
-        title="Go middag! 👋"
-        features={[
-            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter`,
-            "Prisoversikt på alle ukemenyer / oppskrifter",
-            "Velg selv når du handler inn og hvordan",
-            "Spar penger, ingen måndlige avgifter",
-            "100% gratis og åpen kildekode",
-
-        ]}
-    /> -->
 
 
     <InfiniteScroll
     width="100%"
     maxHeight=""
-    negativeMargin="-2.5em"
+    negativeMargin="-0.9em"
     items={data.recipes}
     isTilted={true}
     tiltDirection="right"
     autoplay={true}
-    autoplaySpeed={0.9}
+    autoplaySpeed={1.5}
     autoplayDirection="up"
     pauseOnHover={false}
 >
@@ -75,7 +62,22 @@
             </Card>
     </svelte:fragment>
   </InfiniteScroll>
-  </section>
+  
+
+
+
+    <FeatureList
+        title="Go middag! 👋"
+        features={[
+            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
+            "Live prisoversikt på alle ukemenyer / oppskrifter",
+            "Søk etter oppskrifter, ingredienser eller ukemenyer",
+        ]}
+    />
+
+
+
+</section>
 
 <style>
     .truncate-subtitle {

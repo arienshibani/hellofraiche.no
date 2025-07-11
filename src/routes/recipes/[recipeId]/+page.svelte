@@ -80,7 +80,7 @@
 
 <div class="dark:bg-gray-900">
 
-<h1 class="text-4xl text-center pb-5 pt-10 font-extrabold dark:text-white">{recipe.title}</h1>
+<h1 class="text-4xl text-center pb-5 pt-24 font-extrabold dark:text-white">{recipe.title}</h1>
 <h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
     {recipe.subtitle}
 </h1>

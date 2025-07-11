@@ -57,7 +57,7 @@
 
 <div class="grid mainContent gap-x-40 p-10">
     <Card class="h-max justify-self-end border-none shadow-none dark:bg-gray-800">
-        <h1 class="text-slate-900 text-4xl text-center pt-16 pb-5 dark:text-white">
+        <h1 class="text-slate-900 text-4xl text-center pt-24 pb-5 dark:text-white">
             {mealPlan.name}
         </h1>
 

@@ -28,7 +28,7 @@
 
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
 
-<h1 class="text-5xl text-center pt-16 font-bold dark:text-white">Ukemenyer 🗓️</h1>
+<h1 class="text-5xl text-center pt-24 font-bold dark:text-white">Ukemenyer 🗓️</h1>
 
 <!-- Search Bar #TODO: Make a functional search bar here -->
 <!-- <div class="flex justify-center p-10">

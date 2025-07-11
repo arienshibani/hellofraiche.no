@@ -14,7 +14,7 @@
 <div class="dark:text-gray-200 dark:bg-gray-900">
 
 
-<h1 class="text-5xl text-center pt-16 font-bold dark:text-white">Billig Mat 🍽️</h1>
+<h1 class="text-5xl text-center pt-24 font-bold dark:text-white">Billig Mat 🍽️</h1>
 
 <h1 class="text-3xl text-center p-2 pt-20 dark:text-white">1. Velg middagsplan ✍️</h1>
 <div

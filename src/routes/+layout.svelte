@@ -95,9 +95,7 @@
         <NavLi class="text-xl font-bold" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>Info</NavLi>
       </NavUl>
     </Navbar>
-    <br />
-    <br />
-    <br />
+
     <slot />
     <Toaster />
   </ClickSpark>

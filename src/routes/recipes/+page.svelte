@@ -60,7 +60,7 @@
 
 
 
-<h1 class="text-5xl text-center pt-16 pb-20 font-bold dark:text-white">Oppskrifter 🗒️</h1>
+<h1 class="text-5xl text-center pt-24 pb-20 font-bold dark:text-white">Oppskrifter 🗒️</h1>
 
 <div class="flex justify-center p-10 w-fit m-auto dark:bg-gray-900">
   <form class="flex items-center w-full max-w-4xl" on:submit|preventDefault={handleSearch}>
