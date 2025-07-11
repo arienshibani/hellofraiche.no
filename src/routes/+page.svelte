@@ -46,7 +46,7 @@
     pauseOnHover={false}
 >
     <svelte:fragment slot="default" let:item>
-                                <Card class="w-full max-w-[280px] h-[160px] bg-yellow-100 dark:bg-gray-800 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
+                                <Card class="w-full max-w-[280px] h-[160px] bg-sky-100 dark:bg-gray-800 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
                 <div class="p-4 h-full flex flex-col justify-between">
                     <div class="flex-1 flex items-center justify-center">
                         <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
