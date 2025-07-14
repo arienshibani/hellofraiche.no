@@ -1,13 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { gsap } from 'gsap';
-  // import { Observer } from 'gsap/Observer';
-  import gsapObserver from "gsap/Observer.js";
   import './InfiniteScroll.css';
   import { fade } from 'svelte/transition';
-  const Observer = gsapObserver;
-
-  gsap.registerPlugin(Observer);
 
   export let width = "30rem";
   export let maxHeight = "100%";
@@ -20,11 +14,11 @@
   export let autoplaySpeed = 0.5;
   export let autoplayDirection: "up" | "down" = "down";
   export let pauseOnHover = false;
-  export let hoverSlowdown = 0.3; // Speed multiplier when hovering (0.3 = 30% of normal speed)
+  export let hoverSlowdown = 0.3;
 
   let wrapperRef: HTMLDivElement;
   let containerRef: HTMLDivElement;
-  let observer: Observer;
+  let observer: any;
   let rafId: number;
   let isHovering = false;
 
@@ -35,8 +29,12 @@
       : "rotateX(20deg) rotateZ(20deg) skewX(-20deg)";
   };
 
-  onMount(() => {
+  onMount(async () => {
     if (!containerRef || items.length === 0) return;
+
+    const { gsap } = await import('gsap');
+    const { default: Observer } = await import('gsap/Observer.js');
+    gsap.registerPlugin(Observer);
 
     const divItems = gsap.utils.toArray(containerRef.children) as HTMLElement[];
     if (!divItems.length) return;
@@ -55,8 +53,6 @@
       gsap.set(child, { y });
     });
 
-    // Only create observer if autoplay is disabled (for manual scrolling)
-    // For autoplay-only mode, we skip the observer entirely
     if (!autoplay) {
       observer = Observer.create({
         target: containerRef,
@@ -90,7 +86,6 @@
       let speedPerFrame = autoplaySpeed * directionFactor;
 
       const tick = () => {
-        // Apply hover slowdown if hovering
         const currentSpeed = isHovering && pauseOnHover ? 0 : speedPerFrame;
 
         divItems.forEach((child) => {
@@ -115,7 +110,6 @@
           isHovering = false;
         };
 
-        // Add hover listeners to individual items instead of the container
         divItems.forEach((item) => {
           item.addEventListener("mouseenter", handleMouseEnter);
           item.addEventListener("mouseleave", handleMouseLeave);
@@ -123,7 +117,6 @@
 
         return () => {
           if (observer) observer.kill();
-          // Clean up listeners on individual items
           divItems.forEach((item) => {
             item.removeEventListener("mouseenter", handleMouseEnter);
             item.removeEventListener("mouseleave", handleMouseLeave);
@@ -164,7 +157,9 @@
   }
 </style>
 
-<div
+
+<main>
+  <div
   class="infinite-scroll-wrapper"
   bind:this={wrapperRef}
   style="--max-height: {maxHeight}; --width: {width}; --item-min-height: {itemMinHeight}px; --negative-margin: {negativeMargin};"
@@ -185,3 +180,5 @@
     {/each}
   </div>
 </div>
+
+</main>
