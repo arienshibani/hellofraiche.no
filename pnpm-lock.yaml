@@ -11,6 +11,9 @@ importers:
       '@popperjs/core':
         specifier: ^2.11.7
         version: 2.11.8
+      '@vercel/analytics':
+        specifier: ^1.5.0
+        version: 1.5.0(@sveltejs/kit@1.30.4(svelte@3.59.2)(vite@4.5.14(@types/node@22.15.17)(lightningcss@1.29.2)))(svelte@3.59.2)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
@@ -301,6 +304,32 @@ packages:
 
   '@types/whatwg-url@8.2.2':
     resolution: {integrity: sha512-FtQu10RWgn3D9U4aazdwIE2yzphmTJREDqNdODHrbrZmmMqI0vMheC/6NE/J1Yveaj8H+ela+YwWTjq5PGmuhA==}
+
+  '@vercel/analytics@1.5.0':
+    resolution: {integrity: sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
@@ -1341,6 +1370,11 @@ snapshots:
     dependencies:
       '@types/node': 22.15.17
       '@types/webidl-conversions': 7.0.3
+
+  '@vercel/analytics@1.5.0(@sveltejs/kit@1.30.4(svelte@3.59.2)(vite@4.5.14(@types/node@22.15.17)(lightningcss@1.29.2)))(svelte@3.59.2)':
+    optionalDependencies:
+      '@sveltejs/kit': 1.30.4(svelte@3.59.2)(vite@4.5.14(@types/node@22.15.17)(lightningcss@1.29.2))
+      svelte: 3.59.2
 
   ansi-regex@5.0.1: {}
 

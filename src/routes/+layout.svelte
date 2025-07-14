@@ -7,13 +7,20 @@
     NavUl,
     NavHamburger,
   } from "flowbite-svelte";
+
+  // Analytics integration
+  import { dev } from '$app/environment';
+  import { injectAnalytics } from '@vercel/analytics/sveltekit'
+
   import { Toaster } from 'svelte-french-toast';
   import ClickSpark from "$lib/components/ui/click-spark/ClickSpark.svelte";
-  import Aurora from "$lib/components/ui/aurora-background/Aurora.svelte";
   import { goto } from '$app/navigation';
 
   let hidden = true;
   let isDark = false;
+
+  injectAnalytics({ mode: dev ? 'development' : 'production' });
+
 
   // On mount, set dark mode based on localStorage or system preference
   if (typeof window !== 'undefined') {
