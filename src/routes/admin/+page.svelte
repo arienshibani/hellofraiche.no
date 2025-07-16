@@ -1,9 +1,9 @@
 <script>
-  export let form;
+export let form;
 </script>
 
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-  <form class="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-80">
+  <form method="POST" class="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-80">
     <h2 class="text-2xl font-bold mb-6 text-center dark:text-white">Admin Login</h2>
     {#if form?.error}
       <div class="mb-4 text-red-600 text-center">{form.error}</div>
