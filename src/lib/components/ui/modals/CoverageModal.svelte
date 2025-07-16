@@ -11,6 +11,9 @@
   function handleAdd(name: string) {
     dispatch('add', { name });
   }
+  function handleAddBulk(name: string) {
+    dispatch('addBulk', { name });
+  }
 </script>
 
 {#if open}
@@ -23,9 +26,12 @@
       {:else}
         <ul class="mb-4">
           {#each missingIngredients as ing}
-            <li class="flex items-center justify-between mb-2">
+            <li class="flex items-center justify-between mb-2 gap-2">
               <span class="dark:text-white">{ing.name}</span>
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" on:click={() => handleAdd(ing.name)}>Legg til</button>
+              <div class="flex gap-2">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" on:click={() => handleAdd(ing.name)}>Legg til</button>
+                <button class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded text-xs" on:click={() => handleAddBulk(ing.name)}>Marker som bulk</button>
+              </div>
             </li>
           {/each}
         </ul>

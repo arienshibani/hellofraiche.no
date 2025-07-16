@@ -4,6 +4,7 @@
   import { nanoid } from 'nanoid';
   import RecipeCard from '$lib/components/ui/card/RecipeCard.svelte';
   import IngredientCard from '$lib/components/ui/card/IngredientCard.svelte';
+  import { validateEAN } from '$lib/util/validateEAN.js';
   export let data;
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];
@@ -252,6 +253,10 @@
       ingredientError = 'Navn og EAN er påkrevd';
       return;
     }
+    if (!validateEAN(ingredientForm.ean)) {
+      ingredientError = 'Ugyldig EAN-nummer';
+      return;
+    }
     let res;
     if (isEditingIngredient) {
       res = await fetch('/admin/dashboard/api/ingredients', {
@@ -346,9 +351,10 @@
 
   function getCoverage(recipe) {
     if (!recipe.recipeIngredients || !Array.isArray(recipe.recipeIngredients)) return undefined;
-    const total = recipe.recipeIngredients.length;
+    const filtered = recipe.recipeIngredients.filter(ri => !ri.isBulkItem);
+    const total = filtered.length;
     if (total === 0) return 100;
-    const matched = recipe.recipeIngredients.filter(ri => allIngredients.some(ai => ai.name === ri.name)).length;
+    const matched = filtered.filter(ri => allIngredients.some(ai => ai.name === ri.name)).length;
     return Math.trunc((matched / total) * 100);
   }
 
@@ -394,6 +400,15 @@
             on:edit={() => openModal(recipe)}
             on:delete={() => openDeleteModal(recipe, 'recipe')}
             on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
+            on:refresh={async () => {
+              // Reload both recipes and ingredients data to get updated coverage percentages
+              const response = await fetch('/admin/dashboard');
+              if (response.ok) {
+                const data = await response.json();
+                recipes = data.recipes;
+                allIngredients = data.ingredients;
+              }
+            }}
           />
         {/each}
       </div>

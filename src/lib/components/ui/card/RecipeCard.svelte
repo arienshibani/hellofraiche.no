@@ -22,8 +22,11 @@
   let addEAN = '';
   let addError = '';
 
-  $: missingIngredients = recipe.recipeIngredients
-    ? recipe.recipeIngredients.filter((ri: any) => !allIngredients.some(ai => ai.name === ri.name))
+  $: filteredIngredients = recipe.recipeIngredients
+    ? recipe.recipeIngredients.filter((ri: any) => !ri.isBulkItem)
+    : [];
+  $: missingIngredients = filteredIngredients
+    ? filteredIngredients.filter((ri: any) => !allIngredients.some(ai => ai.name === ri.name))
     : [];
 
   function openCoverageModal() {
@@ -48,10 +51,47 @@
     }
     addError = '';
     dispatch('addIngredient', { name: detail.name, ean: detail.ean });
+    
+    // Also update the recipe's ingredient with the EAN
+    fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        updateEAN: { 
+          name: detail.name, 
+          ean: detail.ean 
+        } 
+      })
+    }).then(() => {
+      // Refresh to show updated recipe with EAN
+      dispatch('refresh');
+    });
+    
     // Don't close modal, let parent update allIngredients and thus missingIngredients
   }
   function handleCoverageAdd({ detail }) {
     openAddModal(detail.name);
+  }
+
+  async function handleCoverageAddBulk({ detail }: { detail: { name: string } }) {
+    try {
+      // PATCH the recipe to set isBulkItem: true for the ingredient with this name
+      const response = await fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markBulk: detail.name })
+      });
+      
+      if (response.ok) {
+        // Successfully marked as bulk, refresh the recipe data
+        dispatch('refresh');
+        closeCoverageModal();
+      } else {
+        console.error('Failed to mark ingredient as bulk');
+      }
+    } catch (error) {
+      console.error('Error marking ingredient as bulk:', error);
+    }
   }
 </script>
 
@@ -77,6 +117,7 @@
   missingIngredients={missingIngredients}
   on:close={closeCoverageModal}
   on:add={handleCoverageAdd}
+  on:addBulk={handleCoverageAddBulk}
 />
 
 <AddIngredientModal
