@@ -343,6 +343,24 @@
     }
     closeDeleteModal();
   }
+
+  function getCoverage(recipe) {
+    if (!recipe.recipeIngredients || !Array.isArray(recipe.recipeIngredients)) return undefined;
+    const total = recipe.recipeIngredients.length;
+    if (total === 0) return 100;
+    const matched = recipe.recipeIngredients.filter(ri => allIngredients.some(ai => ai.name === ri.name)).length;
+    return Math.trunc((matched / total) * 100);
+  }
+
+  function saveIngredientFromCard({ name, ean, done }) {
+    // Reuse saveIngredient logic, but allow passing name/ean and optionally skip closing modal
+    ingredientForm = { name, ean };
+    ingredientError = '';
+    isEditingIngredient = false;
+    editingIngredient = null;
+    showIngredientModal = true;
+    // Optionally, you can handle 'done' callback if needed
+  }
 </script>
 
 <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
@@ -371,8 +389,11 @@
           <RecipeCard
             {recipe}
             showAdminActions={true}
+            coverage={getCoverage(recipe)}
+            allIngredients={allIngredients}
             on:edit={() => openModal(recipe)}
             on:delete={() => openDeleteModal(recipe, 'recipe')}
+            on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
           />
         {/each}
       </div>
