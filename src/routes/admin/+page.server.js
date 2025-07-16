@@ -11,15 +11,25 @@ export const load = async ({ cookies }) => {
 
 export const actions = {
     default: async ({ request, cookies }) => {
+        // Get form data
         const data = await request.formData();
+
+        // Validate credentials
         const username = data.get('username');
         const password = data.get('password');
 
-        if (username === ADMIN_DASHBOARD_USER && password === ADMIN_DASHBOARD_PW) {
+
+        // Check if credentials match
+        if (!username || !password) {
+            return fail(400, { error: 'Brukernavn og passord må fylles ut' });
+        }
+
+        if (username === ADMIN_DASHBOARD_USER &&
+            password === ADMIN_DASHBOARD_PW) {
             cookies.set('admin_auth', 'true', { path: '/admin', httpOnly: true, sameSite: 'strict' });
             throw redirect(302, '/admin/dashboard');
-        } else {
-            return fail(401, { error: 'Ugyldig brukernavn eller passord' });
         }
+
+        return fail(401, { error: 'Ugyldig brukernavn eller passord' });
     }
 };

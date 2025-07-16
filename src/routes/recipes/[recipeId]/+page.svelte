@@ -73,65 +73,61 @@
         goto(`/plans/${data.recipe.mealPlanId}`);
     };
 </script>
-
 <svelte:head>
-  <title>{recipe.title} {recipe.subtitle ? ` – ${recipe.subtitle}` : ''} | HalloFraiche</title>
+    <title>{recipe.title} {recipe.subtitle ? ` – ${recipe.subtitle}` : ''} | HalloFraiche</title>
 </svelte:head>
 
-<div class="dark:bg-gray-900">
-
-<h1 class="text-4xl text-center pb-5 pt-24 font-extrabold dark:text-white">{recipe.title}</h1>
-<h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
-    {recipe.subtitle}
-</h1>
-
-<div class="flex justify-center flex-wrap mt-16 pb-40 dark:bg-gray-900 dark:text-white">
-    <div class=" p-4 rounded">
-        <h1 class="text-2xl font-extrabold dark:text-white">Ingredienser</h1>
-        <div class="flex justify-start pt-5">
-            <button on:click={handleMinus} class="pr-5">
-                <MinusCircle class="inline" />
-            </button>
-            <h2 class="text-1xl text-gray-900 dark:text-white">
-                {count}
-                {count === 1 ? "Person  " : "Personer"}
-            </h2>
-            <button on:click={handlePlus} class="pl-5">
-                <PlusCircle class="inline" />
-            </button>
-        </div>
-
-        {#each recipe.recipeIngredients as ingredient}
-            <p class="pt-6 text-lg bigPaddingOnLargeScreens dark:text-gray-200">
-                {formatAmount(ingredient.amount * count, ingredient.measurement)}
-                <span class="pl-4 text-left">{ingredient.name}</span>
-            </p>
-        {/each}
-    </div>
-
-    <div class="flex-grow-1  p-4 rounded">
-        <h1 class="text-2xl font-bold pb-5 topPaddingOnSmallScreens dark:text-white">
-            Fremgangsmåte
+<main>
+    <div class="dark:bg-gray-900">
+        <h1 class="text-4xl text-center pb-5 pt-24 font-extrabold dark:text-white">{recipe.title}</h1>
+        <h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
+            {recipe.subtitle}
         </h1>
-        {#each recipe.steps as cookingInstruction, index}
-            <p class="text-xl p-4 max-w-lg dark:text-gray-200">
-                <span class="font-bold">{index + 1 + "."}</span>
-                {cookingInstruction}
-            </p>
-        {/each}
-    </div>
-</div>
-</div>
 
+        <div class="flex justify-center flex-wrap mt-16 pb-40 dark:bg-gray-900 dark:text-white">
+            <div class=" p-4 rounded">
+                <h1 class="text-2xl font-extrabold dark:text-white">Ingredienser</h1>
+                <div class="flex justify-start pt-5">
+                    <button on:click={handleMinus} class="pr-5">
+                        <MinusCircle class="inline" />
+                    </button>
+                    <h2 class="text-1xl text-gray-900 dark:text-white">
+                        {count}
+                        {count === 1 ? "Person  " : "Personer"}
+                    </h2>
+                    <button on:click={handlePlus} class="pl-5">
+                        <PlusCircle class="inline" />
+                    </button>
+                </div>
+
+                {#each recipe.recipeIngredients as ingredient}
+                    <p class="pt-6 text-lg bigPaddingOnLargeScreens dark:text-gray-200">
+                        {formatAmount(ingredient.amount * count, ingredient.measurement)}
+                        <span class="pl-4 text-left">{ingredient.name}</span>
+                    </p>
+                {/each}
+            </div>
+
+            <div class="flex-grow-1  p-4 rounded">
+                <h1 class="text-2xl font-bold pb-5 topPaddingOnSmallScreens dark:text-white">
+                    Fremgangsmåte
+                </h1>
+                {#each recipe.steps as cookingInstruction, index}
+                    <p class="text-xl p-4 max-w-lg dark:text-gray-200">
+                        <span class="font-bold">{index + 1 + "."}</span>
+                        {cookingInstruction}
+                    </p>
+                {/each}
+            </div>
+        </div>
+    </div>
+</main>
 <style>
     .bigPaddingOnLargeScreens {
         padding-right: 10rem;
     }
 
     @media (max-width: 881px) {
-        .hideOnLargeScreens {
-            display: inherit;
-        }
         .smallerTextOnSmallScreens {
             font-size: 1rem !important;
         }
