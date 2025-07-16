@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
+  import RecipeCard from '$lib/components/ui/card/RecipeCard.svelte';
+  import IngredientCard from '$lib/components/ui/card/IngredientCard.svelte';
+  import { validateEAN } from '$lib/util/validateEAN.js';
   export let data;
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];
@@ -250,6 +253,10 @@
       ingredientError = 'Navn og EAN er påkrevd';
       return;
     }
+    if (!validateEAN(ingredientForm.ean)) {
+      ingredientError = 'Ugyldig EAN-nummer';
+      return;
+    }
     let res;
     if (isEditingIngredient) {
       res = await fetch('/admin/dashboard/api/ingredients', {
@@ -341,9 +348,28 @@
     }
     closeDeleteModal();
   }
+
+  function getCoverage(recipe) {
+    if (!recipe.recipeIngredients || !Array.isArray(recipe.recipeIngredients)) return undefined;
+    const filtered = recipe.recipeIngredients.filter(ri => !ri.isBulkItem);
+    const total = filtered.length;
+    if (total === 0) return 100;
+    const matched = filtered.filter(ri => allIngredients.some(ai => ai.name === ri.name)).length;
+    return Math.trunc((matched / total) * 100);
+  }
+
+  function saveIngredientFromCard({ name, ean, done }) {
+    // Reuse saveIngredient logic, but allow passing name/ean and optionally skip closing modal
+    ingredientForm = { name, ean };
+    ingredientError = '';
+    isEditingIngredient = false;
+    editingIngredient = null;
+    showIngredientModal = true;
+    // Optionally, you can handle 'done' callback if needed
+  }
 </script>
 
-<div class="flex flex-col items-center w-full dark:bg-gray-900 dark:text-white">
+<div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
   <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
     <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
   </div>
@@ -366,16 +392,24 @@
           </button>
         </div>
         {#each recipes as recipe}
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
-            <div>
-              <div class="font-bold text-lg group-hover:text-blue-700 transition-colors dark:text-white">{recipe.title}</div>
-              <div class="text-gray-600 dark:text-gray-300">{recipe.subtitle}</div>
-            </div>
-            <div class="flex gap-2">
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded dark:bg-blue-900" on:click={() => openModal(recipe)}>Rediger Oppskrift ✍️</button>
-              <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded dark:bg-red-900" on:click={() => openDeleteModal(recipe, 'recipe')}>Slett Oppskrift 🗑️</button>
-            </div>
-          </div>
+          <RecipeCard
+            {recipe}
+            showAdminActions={true}
+            coverage={getCoverage(recipe)}
+            allIngredients={allIngredients}
+            on:edit={() => openModal(recipe)}
+            on:delete={() => openDeleteModal(recipe, 'recipe')}
+            on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
+            on:refresh={async () => {
+              // Reload both recipes and ingredients data to get updated coverage percentages
+              const response = await fetch('/admin/dashboard');
+              if (response.ok) {
+                const data = await response.json();
+                recipes = data.recipes;
+                allIngredients = data.ingredients;
+              }
+            }}
+          />
         {/each}
       </div>
     {/if}
@@ -401,39 +435,12 @@
           Ingredienser lagt til her vil hente pris og næringsinfo via <a href="https://kassal.app/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">kassal.app</a>. Data oppdateres hver natt, og vil hentes så lenge EAN-nummeret er korrekt.
         </div>
         {#each allIngredients as ingredient (ingredient._id)}
-          <div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow transition-opacity min-h-[100px] p-4 flex flex-col">
-            <div class="flex items-center justify-between">
-              <div class="font-bold text-lg dark:text-white">{ingredient.name}</div>
-              <div class="flex gap-2">
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm dark:bg-blue-900" on:click={() => openEditIngredient(ingredient)}>Rediger ingrediens ✍️</button>
-                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm dark:bg-red-900" on:click={() => openDeleteModal(ingredient, 'ingredient')}>Slett 🗑️</button>
-              </div>
-            </div>
-            <div class="text-gray-600 dark:text-gray-300 text-sm">
-              EAN: {ingredient.ean || 'N/A'}
-              {#if ingredient.data && ingredient.data.products && ingredient.data.products.length > 0}
-                {#each [ingredient.data.products[0]] as product}
-                  <br />
-                  Pris: {product.current_price?.price ? Number(product.current_price.price).toFixed(2) + ' kr' : 'N/A'}
-                  {#if product.current_price?.unit_price}
-                    &nbsp;|&nbsp; Pris per enhet: {Number(product.current_price.unit_price).toFixed(2)} kr/{product.weight_unit || 'enhet'}
-                  {/if}
-                  {#if product.weight}
-                    &nbsp;|&nbsp; Vekt: {product.weight}{product.weight_unit}
-                  {/if}
-                  {#if product.url}
-                    <br />
-                    <a href={product.url} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline flex items-center gap-1 mt-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14m-4 0h7m-7 0v7m0-7L14 3" /></svg>
-                      Produktlink
-                    </a>
-                  {/if}
-                {/each}
-              {:else}
-                <br />Pris: N/A
-              {/if}
-            </div>
-          </div>
+          <IngredientCard
+            {ingredient}
+            showAdminActions={true}
+            on:edit={() => openEditIngredient(ingredient)}
+            on:delete={() => openDeleteModal(ingredient, 'ingredient')}
+          />
         {/each}
       </div>
     {/if}

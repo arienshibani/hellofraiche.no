@@ -51,4 +51,4 @@ export function formatNumber(amount) {
     }
 
     return formatted;
-} 
+}
