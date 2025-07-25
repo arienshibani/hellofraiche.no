@@ -13,4 +13,3 @@ export type Dish = {
     steps: string[]; // Steps that must be followed for preparation
     mealPlanId: string; // Unique identifier used to find out what meal plan this dish is a part of.
   };
-  

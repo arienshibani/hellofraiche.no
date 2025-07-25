@@ -11,8 +11,43 @@
     import { formatAmount } from "$lib/util/formatAmount.js";
 
     // Load data from +page.server.js
-    $: ({ recipe, mealPlan } = data);
+    $: ({ recipe, mealPlan, ingredients } = data);
     export let data;
+
+    console.log(data)
+
+    // Function to find Meny product for an ingredient
+    function findMenyProduct(ingredientName) {
+        const ingredient = ingredients.find(ing => ing.name === ingredientName);
+        if (!ingredient || !ingredient.data || !ingredient.data.products) return null;
+
+        // Find Meny product
+        return ingredient.data.products.find(product =>
+            product.store && product.store.name === 'Meny'
+        ) || null;
+    }
+
+    // Calculate ingredient price based on amount and Meny product
+    function calculateIngredientPrice(recipeIngredient) {
+        const menyProduct = findMenyProduct(recipeIngredient.name);
+        if (!menyProduct || !menyProduct.current_price || !menyProduct.current_price.price) {
+            return null;
+        }
+
+        const basePrice = menyProduct.current_price.price;
+        const baseAmount = recipeIngredient.amount;
+
+        // For now, we'll use the base price as-is
+        // #TODO: In the future, we could implement more sophisticated price calculations
+        // based on weight/volume units
+        return basePrice;
+    }
+
+    // Calculate total recipe price
+    $: totalRecipePrice = recipe.recipeIngredients
+        .map(ingredient => calculateIngredientPrice(ingredient))
+        .filter(price => price !== null)
+        .reduce((sum, price) => sum + price, 0);
 
     // Do not allow the counter to go above 10
     const handlePlus = () => {
@@ -79,7 +114,7 @@
 
 <main>
     <div class="dark:bg-gray-900">
-        <h1 class="text-4xl text-center pb-5 pt-24 font-extrabold dark:text-white">{recipe.title}</h1>
+        <h1 class="text-4xl text-center pb-5 pt-36 font-extrabold dark:text-white">{recipe.title}</h1>
         <h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
             {recipe.subtitle}
         </h1>
@@ -87,6 +122,24 @@
         <div class="flex justify-center flex-wrap mt-16 pb-40 dark:bg-gray-900 dark:text-white">
             <div class=" p-4 rounded">
                 <h1 class="text-2xl font-extrabold dark:text-white">Ingredienser</h1>
+
+                <!-- Total Price Display -->
+                {#if totalRecipePrice > 0}
+                    <div class="bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded-lg p-4 mb-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-semibold text-green-800 dark:text-green-200">
+                                Total pris hos Meny:
+                            </span>
+                            <span class="text-2xl font-bold text-green-800 dark:text-green-200">
+                                {totalRecipePrice.toFixed(2)} kr
+                            </span>
+                        </div>
+                        <p class="text-sm text-green-600 dark:text-green-300 mt-1">
+                            Alle ingredienser kan leveres hjem til deg
+                        </p>
+                    </div>
+                {/if}
+
                 <div class="flex justify-start pt-5">
                     <button on:click={handleMinus} class="pr-5">
                         <MinusCircle class="inline" />
@@ -101,10 +154,38 @@
                 </div>
 
                 {#each recipe.recipeIngredients as ingredient}
-                    <p class="pt-6 text-lg bigPaddingOnLargeScreens dark:text-gray-200">
-                        {formatAmount(ingredient.amount * count, ingredient.measurement)}
-                        <span class="pl-4 text-left">{ingredient.name}</span>
-                    </p>
+                    {@const ingredientPrice = calculateIngredientPrice(ingredient)}
+                    {@const menyProduct = findMenyProduct(ingredient.name)}
+                    <div class="pt-6 text-lg bigPaddingOnLargeScreens dark:text-gray-200 flex items-center justify-between">
+                        <div class="flex-1">
+                            {formatAmount(ingredient.amount * count, ingredient.measurement)}
+                            <span class="pl-4 text-left">{ingredient.name}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            {#if ingredientPrice}
+                                <span class="text-green-600 dark:text-green-400 font-semibold text-right min-w-[80px]">
+                                    {ingredientPrice.toFixed(2)} kr
+                                </span>
+                                {#if menyProduct && menyProduct.url}
+                                    <a 
+                                        href={menyProduct.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                        title="Kjøp hos Meny"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                {/if}
+                            {:else}
+                                <span class="text-gray-400 dark:text-gray-500 text-right min-w-[80px]">
+                                    N/A
+                                </span>
+                            {/if}
+                        </div>
+                    </div>
                 {/each}
             </div>
 
