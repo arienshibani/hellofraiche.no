@@ -28,6 +28,20 @@ export type IngredientWithPrice = {
                 price: number;
             };
             url?: string;
+            weight?: number;
+            weight_unit?: string;
+            nutrition?: Array<{
+                code: string;
+                display_name: string;
+                amount: number;
+                unit: string;
+            }>;
+        }>;
+        nutrition?: Array<{
+            code: string;
+            display_name: string;
+            amount: number;
+            unit: string;
         }>;
     };
 };

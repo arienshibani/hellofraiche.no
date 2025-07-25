@@ -9,12 +9,21 @@
     } from "svelte-heros-v2";
     import { goto } from "$app/navigation";
     import { formatAmount } from "$lib/util/formatAmount.js";
+    import { calculateIngredientPrice } from "$lib/util/conversions";
     import IngredientsTable from "$lib/components/ui/IngredientsTable.svelte";
+    import NutritionTable from "$lib/components/ui/NutritionTable.svelte";
+
+
 
     // Load data from +page.server.js
     $: ({ recipe, mealPlan, ingredients } = data);
+
     export let data;
-        // Calculate total recipe price
+    
+    // Portion counter - must be declared before reactive statements that use it
+    let count = 1;
+    
+    // Calculate total recipe price using accurate conversions
     $: totalRecipePrice = recipe.recipeIngredients
         .map(ingredient => {
             const ingredientData = ingredients.find(ing => ing.name === ingredient.name);
@@ -24,10 +33,20 @@
                 product.store && product.store.name === 'Meny'
             );
 
-            return menyProduct?.current_price?.price || null;
+            if (!menyProduct?.current_price?.price) return null;
+
+            // Use accurate price calculation based on weight
+            const productWeight = menyProduct.weight || 100; // Default to 100g if no weight data
+            return calculateIngredientPrice(
+                ingredient.amount * count,
+                ingredient.measurement,
+                ingredient.name,
+                menyProduct.current_price.price,
+                productWeight
+            );
         })
         .filter(price => price !== null)
-        .reduce((sum, price) => sum + price, 0);
+        .reduce((sum, price) => sum + (price || 0), 0);
 
     // Do not allow the counter to go above 10
     const handlePlus = () => {
@@ -82,12 +101,13 @@
         }
     };
 
-    let count = 1;
-
     const goToMealPlan = () => {
         goto(`/plans/${data.recipe.mealPlanId}`);
     };
+    console.log(data, "HAHAH")
+
 </script>
+
 <svelte:head>
     <title>{recipe.title} {recipe.subtitle ? ` – ${recipe.subtitle}` : ''} | HalloFraiche</title>
 </svelte:head>
@@ -137,6 +157,15 @@
                     </p>
                 {/each}
             </div>
+        </div>
+
+        <!-- Nutrition Table - Outside the flex container for proper centering -->
+        <div class="flex justify-center pb-40">
+            <NutritionTable
+                {ingredients}
+                recipeIngredients={recipe.recipeIngredients}
+                {count}
+            />
         </div>
     </div>
 </main>

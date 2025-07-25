@@ -3,6 +3,13 @@
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
   import { Tabs, TabItem } from 'flowbite-svelte';
+  
+  onMount(() => {
+    // Simulate a small delay to show loading state, then hide it
+    setTimeout(() => {
+      isLoading = false;
+    }, 500);
+  });
   import RecipesTable from '$lib/components/ui/RecipesTable.svelte';
   import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
   import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
@@ -10,6 +17,8 @@
   export let data;
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];
+  let isLoading = true;
+
 
   let showModal = false;
   // @ts-ignore
@@ -366,7 +375,17 @@
     <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
       <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
     </div>
-          <div class="w-full mt-8">
+    
+    {#if isLoading}
+      <!-- Loading Spinner -->
+      <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="flex flex-col items-center gap-4">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <p class="text-lg text-gray-600 dark:text-gray-400">Laster admin dashboard...</p>
+        </div>
+      </div>
+    {:else}
+      <div class="w-full mt-8">
         <Tabs class="justify-center">
         <TabItem open={true} title="📖 Oppskrifter">
           <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col gap-4 w-full">
@@ -429,6 +448,7 @@
         </TabItem>
       </Tabs>
     </div>
+    {/if}
   </div>
 
 {#if showModal}

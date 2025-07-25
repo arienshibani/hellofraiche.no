@@ -50,7 +50,7 @@
 <div class="flex justify-evenly flex-wrap max-w-6xl m-auto dark:bg-gray-900">
   {#each mealPlans as mealPlan, index}
     <!-- Recipe items -->
-    <Card class="border-none shadow-none dark:bg-gray-900" padding="sm">
+    <Card class="border-none shadow-none bg-transparent dark:bg-transparent" padding="sm">
       <div class="flex justify-end"></div>
       <div class="flex flex-col items-center pb-4">
         <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
