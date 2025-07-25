@@ -62,11 +62,8 @@
             </Card>
     </svelte:fragment>
   </InfiniteScroll>
-  
 
-
-
-    <FeatureList
+    <FeatureList className="pointer-events-none"
         title="Go middag! 👋"
         features={[
             `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
@@ -74,8 +71,6 @@
             "Søk etter oppskrifter, ingredienser eller ukemenyer",
         ]}
     />
-
-
 
 </section>
 

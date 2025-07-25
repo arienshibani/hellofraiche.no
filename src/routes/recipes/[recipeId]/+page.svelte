@@ -14,9 +14,6 @@
     // Load data from +page.server.js
     $: ({ recipe, mealPlan, ingredients } = data);
     export let data;
-
-    console.log(data)
-
         // Calculate total recipe price
     $: totalRecipePrice = recipe.recipeIngredients
         .map(ingredient => {

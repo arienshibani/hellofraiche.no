@@ -16,7 +16,6 @@
   import ClickSpark from "$lib/components/ui/click-spark/ClickSpark.svelte";
   import { goto } from '$app/navigation';
 
-  let hidden = true;
   let isDark = false;
 
   injectAnalytics({ mode: dev ? 'development' : 'production' });
