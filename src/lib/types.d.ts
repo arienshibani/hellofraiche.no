@@ -12,4 +12,30 @@ export type Dish = {
     portions: number; // Portion size for the dish
     steps: string[]; // Steps that must be followed for preparation
     mealPlanId: string; // Unique identifier used to find out what meal plan this dish is a part of.
-  };
+};
+
+// Database ingredient with price data from Kassal.app
+export type IngredientWithPrice = {
+    _id: string;
+    name: string;
+    ean: string;
+    data?: {
+        products?: Array<{
+            store?: {
+                name: string;
+            };
+            current_price?: {
+                price: number;
+            };
+            url?: string;
+        }>;
+    };
+};
+
+// Recipe ingredient (from recipe data)
+export type RecipeIngredient = {
+    name: string;
+    amount: number;
+    measurement: string;
+    isBulkItem?: boolean;
+};
