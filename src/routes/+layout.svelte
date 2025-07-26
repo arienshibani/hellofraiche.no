@@ -7,6 +7,8 @@
     NavUl,
     NavHamburger,
   } from "flowbite-svelte";
+  import { CalendarCheck, CookingPot, Info, Moon, Sun, ChefHat } from 'lucide-svelte';
+
 
   // Analytics integration
   import { dev } from '$app/environment';
@@ -16,7 +18,6 @@
   import ClickSpark from "$lib/components/ui/click-spark/ClickSpark.svelte";
   import { goto } from '$app/navigation';
 
-  let hidden = true;
   let isDark = false;
 
   injectAnalytics({ mode: dev ? 'development' : 'production' });
@@ -79,27 +80,43 @@
     <Navbar
       let:hidden
       let:toggle
-      style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); backdrop-filter: blur(13px);"
-      class="px-2 bg-white-400 sm:px-4 py-2.5 fixed w-full z-20 top-0 left-0"
+      style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); backdrop-filter: blur(13px); min-height: 2.5rem;"
+      class="px-2 bg-white/80 dark:bg-gray-900/80 sm:px-4 py-0.5 fixed w-full z-20 top-0 left-0 backdrop-blur-md"
     >
       <NavBrand href="/">
-        <div class="text-2xl  font-extrabold italic ml-2">
-          HALLO FRAICHE
+        <div class="flex items-center gap-2 ml-2">
+          <ChefHat size={24} class="text-gray-700 dark:text-gray-300" />
+          <div class="text-xl font-extrabold italic">
+            HALLO FRAICHE
+          </div>
         </div>
       </NavBrand>
       <button
-        class="ml-4 text-2xl focus:outline-none"
+        class="ml-4 text-xl focus:outline-none"
         aria-label="Toggle dark mode"
         on:click={toggleDark}
         style="background: none; border: none; cursor: pointer;"
       >
-        {isDark ? '🌙' : '☀️'}
+        {#if isDark}
+          <Moon size={20} class="text-gray-300" />
+        {:else}
+          <Sun size={20} class="text-gray-700" />
+        {/if}
       </button>
       <NavHamburger on:click={toggle} />
       <NavUl {hidden}>
-        <NavLi class="text-xl font-bold" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>Ukemenyer</NavLi>
-        <NavLi class="text-xl font-bold" href="/recipes" on:click={(e) => delayedNav(e, '/recipes', toggle)}>Oppskrifter</NavLi>
-        <NavLi class="text-xl font-bold" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>Info</NavLi>
+        <NavLi class="text-base font-semibold flex items-center gap-2" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>
+          <CalendarCheck size={18} />
+          Ukemenyer
+        </NavLi>
+        <NavLi class="text-base font-semibold flex items-center gap-2" href="/recipes" on:click={(e) => delayedNav(e, '/recipes', toggle)}>
+          <CookingPot size={18} />
+          Oppskrifter
+        </NavLi>
+        <NavLi class="text-base font-semibold flex items-center gap-2" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>
+          <Info size={18} />
+          Info
+        </NavLi>
       </NavUl>
     </Navbar>
 

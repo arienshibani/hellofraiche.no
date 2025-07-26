@@ -2,21 +2,27 @@
   // @ts-nocheck
 
   import { ArrowRight } from "svelte-heros-v2";
-
   import { ImagePlaceholder } from "flowbite-svelte";
+  import { Utensils, Edit, Package, ChefHat } from "lucide-svelte";
 </script>
 
 
 <svelte:head>
-  <title>Hello Fraiche 🍽️</title>
+  <title>Hello Fraiche</title>
 </svelte:head>
 
 <div class="dark:text-gray-200 dark:bg-gray-900">
 
 
-<h1 class="text-5xl text-center pt-24 font-bold dark:text-white">Billig Mat 🍽️</h1>
+<h1 class="text-5xl text-center pt-24 font-bold dark:text-white flex items-center justify-center gap-3">
+  <Utensils size={48} class="text-gray-700 dark:text-gray-300" />
+  Billig Mat
+</h1>
 
-<h1 class="text-3xl text-center p-2 pt-20 dark:text-white">1. Velg middagsplan ✍️</h1>
+<h1 class="text-3xl text-center p-2 pt-20 dark:text-white flex items-center justify-center gap-2">
+  <Edit size={32} class="text-gray-700 dark:text-gray-300" />
+  1. Velg middagsplan
+</h1>
 <div
   class="gridsetup grid p-12 grid-cols-2 gap-4 items-center max-w-4xl mt-0 m-auto dark:bg-gray-900 dark:text-white"
 >
@@ -31,7 +37,10 @@
   </p>
 </div>
 
-<h1 class="text-3xl text-center p-2 pt-10 dark:text-white">2. Kjøp råvarene 📦</h1>
+<h1 class="text-3xl text-center p-2 pt-10 dark:text-white flex items-center justify-center gap-2">
+  <Package size={32} class="text-gray-700 dark:text-gray-300" />
+  2. Kjøp råvarene
+</h1>
 
 <div
   class="gridsetup grid p-12 grid-cols-2 gap-4 items-center max-w-4xl mt-0 m-auto dark:bg-gray-900 dark:text-white"
@@ -65,7 +74,11 @@
     <button
       class="m-auto border border-black border-r-4 border-b-4 rounded-sm h-10 w-fit pr-4 pl-4 mt-20 mb-40 hover:scale-110 transition-transform duration-300 dark:bg-gray-800 dark:text-white dark:border-white"
     >
-      Finn din plan! 🍽️ <ArrowRight class="inline" />
+      <div class="flex items-center gap-2">
+        <ChefHat size={18} />
+        Finn din plan!
+        <ArrowRight class="inline" />
+      </div>
     </button>
   </div>
 </a>

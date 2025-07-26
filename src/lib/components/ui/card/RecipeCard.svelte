@@ -51,22 +51,22 @@
     }
     addError = '';
     dispatch('addIngredient', { name: detail.name, ean: detail.ean });
-    
+
     // Also update the recipe's ingredient with the EAN
     fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        updateEAN: { 
-          name: detail.name, 
-          ean: detail.ean 
-        } 
+      body: JSON.stringify({
+        updateEAN: {
+          name: detail.name,
+          ean: detail.ean
+        }
       })
     }).then(() => {
       // Refresh to show updated recipe with EAN
       dispatch('refresh');
     });
-    
+
     // Don't close modal, let parent update allIngredients and thus missingIngredients
   }
   function handleCoverageAdd({ detail }) {
@@ -81,7 +81,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markBulk: detail.name })
       });
-      
+
       if (response.ok) {
         // Successfully marked as bulk, refresh the recipe data
         dispatch('refresh');

@@ -2,12 +2,23 @@
   import { onMount } from 'svelte';
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
-  import RecipeCard from '$lib/components/ui/card/RecipeCard.svelte';
-  import IngredientCard from '$lib/components/ui/card/IngredientCard.svelte';
+  import { Tabs, TabItem } from 'flowbite-svelte';
+  
+  onMount(() => {
+    // Simulate a small delay to show loading state, then hide it
+    setTimeout(() => {
+      isLoading = false;
+    }, 500);
+  });
+  import RecipesTable from '$lib/components/ui/RecipesTable.svelte';
+  import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
+  import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
   import { validateEAN } from '$lib/util/validateEAN.js';
   export let data;
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];
+  let isLoading = true;
+
 
   let showModal = false;
   // @ts-ignore
@@ -39,9 +50,7 @@
   let ingredientForm = { name: '', ean: '' };
   let ingredientError = '';
 
-  // Collapsible state
-  let showRecipes = false;
-  let showIngredients = false;
+
 
   // Deletion modal state
   let showDeleteModal = false;
@@ -349,14 +358,7 @@
     closeDeleteModal();
   }
 
-  function getCoverage(recipe) {
-    if (!recipe.recipeIngredients || !Array.isArray(recipe.recipeIngredients)) return undefined;
-    const filtered = recipe.recipeIngredients.filter(ri => !ri.isBulkItem);
-    const total = filtered.length;
-    if (total === 0) return 100;
-    const matched = filtered.filter(ri => allIngredients.some(ai => ai.name === ri.name)).length;
-    return Math.trunc((matched / total) * 100);
-  }
+
 
   function saveIngredientFromCard({ name, ean, done }) {
     // Reuse saveIngredient logic, but allow passing name/ean and optionally skip closing modal
@@ -369,83 +371,85 @@
   }
 </script>
 
-<div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
-  <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
-    <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
-  </div>
-  <!-- Recipes Collapsible -->
-  <div class="w-full  mt-8 mb-4">
-    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 dark:bg-gray-800 rounded-t-lg font-bold text-lg dark:text-white" on:click={() => showRecipes = !showRecipes}>
-      <span>Oppskrifter</span>
-      <span>{showRecipes ? '▲' : '▼'}</span>
-    </button>
-    {#if showRecipes}
-      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
-        <div class="flex items-center mb-4 justify-between flex-row-reverse">
-          <button
-            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
-            on:click={openCreateModal}
-            aria-label="Add new recipe"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-            <span class="font-medium">Ny oppskrift</span>
-          </button>
+  <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
+    <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
+      <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
+    </div>
+    
+    {#if isLoading}
+      <!-- Loading Spinner -->
+      <div class="flex items-center justify-center min-h-[60vh]">
+        <div class="flex flex-col items-center gap-4">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <p class="text-lg text-gray-600 dark:text-gray-400">Laster admin dashboard...</p>
         </div>
-        {#each recipes as recipe}
-          <RecipeCard
-            {recipe}
-            showAdminActions={true}
-            coverage={getCoverage(recipe)}
-            allIngredients={allIngredients}
-            on:edit={() => openModal(recipe)}
-            on:delete={() => openDeleteModal(recipe, 'recipe')}
-            on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
-            on:refresh={async () => {
-              // Reload both recipes and ingredients data to get updated coverage percentages
-              const response = await fetch('/admin/dashboard');
-              if (response.ok) {
-                const data = await response.json();
-                recipes = data.recipes;
-                allIngredients = data.ingredients;
-              }
-            }}
-          />
-        {/each}
       </div>
+    {:else}
+      <div class="w-full mt-8">
+        <Tabs class="justify-center">
+        <TabItem open={true} title="📖 Oppskrifter">
+          <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col gap-4 w-full">
+            <div class="flex items-center mb-4 justify-between flex-row-reverse">
+              <button
+                class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
+                on:click={openCreateModal}
+                aria-label="Add new recipe"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                <span class="font-medium">Ny oppskrift</span>
+              </button>
+            </div>
+            <RecipesTable
+              {recipes}
+              {allIngredients}
+              showAdminActions={true}
+              on:edit={(event) => openModal(event.detail)}
+              on:delete={(event) => openDeleteModal(event.detail, 'recipe')}
+              on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
+              on:refresh={async () => {
+                // Reload both recipes and ingredients data to get updated coverage percentages
+                const response = await fetch('/admin/dashboard');
+                if (response.ok) {
+                  const data = await response.json();
+                  recipes = data.recipes;
+                  allIngredients = data.ingredients;
+                }
+              }}
+            />
+          </div>
+        </TabItem>
+
+        <TabItem title="🥕 Ingredienser">
+          <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col gap-4 w-full">
+            <div class="flex items-center mb-4 justify-between flex-row-reverse">
+              <button
+                class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
+                on:click={openNewIngredient}
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                <span class="font-medium">Ny ingrediens</span>
+              </button>
+            </div>
+
+            <IngredientsAlert {allIngredients} />
+
+
+            <div class="mb-4 p-3 max-w-xl bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-400 rounded text-blue-900 dark:text-blue-100 text-sm">
+              Ingredienser lagt til her vil hente pris og næringsinfo via <a href="https://kassal.app/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">kassal.app</a>. Data oppdateres hver natt, og vil hentes så lenge EAN-nummeret er korrekt.
+            </div>
+
+            <IngredientsAdminTable
+              ingredients={allIngredients}
+              showAdminActions={true}
+              on:edit={(event) => openEditIngredient(event.detail)}
+              on:delete={(event) => openDeleteModal(event.detail, 'ingredient')}
+            />
+          </div>
+        </TabItem>
+      </Tabs>
+    </div>
     {/if}
   </div>
-  <!-- Ingredient Collapsible -->
-  <div class="w-full max-w-1xl mt-8">
-    <button class="w-full flex items-center justify-between px-4 py-2 bg-gray-200 dark:bg-gray-800 rounded-t-lg font-bold text-lg dark:text-white" on:click={() => showIngredients = !showIngredients}>
-      <span>Ingredienser</span>
-      <span>{showIngredients ? '▲' : '▼'}</span>
-    </button>
-    {#if showIngredients}
-      <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-b-lg shadow p-4 flex flex-col gap-4 w-full">
-        <div class="flex items-center mb-4 justify-between flex-row-reverse">
-          <button
-            class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
-            on:click={openNewIngredient}
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-            <span class="font-medium">Ny ingrediens</span>
-          </button>
-        </div>
-        <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-400 rounded text-blue-900 dark:text-blue-100 text-sm">
-          Ingredienser lagt til her vil hente pris og næringsinfo via <a href="https://kassal.app/" target="_blank" rel="noopener noreferrer" class="underline hover:text-blue-700">kassal.app</a>. Data oppdateres hver natt, og vil hentes så lenge EAN-nummeret er korrekt.
-        </div>
-        {#each allIngredients as ingredient (ingredient._id)}
-          <IngredientCard
-            {ingredient}
-            showAdminActions={true}
-            on:edit={() => openEditIngredient(ingredient)}
-            on:delete={() => openDeleteModal(ingredient, 'ingredient')}
-          />
-        {/each}
-      </div>
-    {/if}
-  </div>
-</div>
 
 {#if showModal}
   <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">

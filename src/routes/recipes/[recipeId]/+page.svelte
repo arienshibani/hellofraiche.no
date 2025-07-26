@@ -9,10 +9,44 @@
     } from "svelte-heros-v2";
     import { goto } from "$app/navigation";
     import { formatAmount } from "$lib/util/formatAmount.js";
+    import { calculateIngredientPrice } from "$lib/util/conversions";
+    import IngredientsTable from "$lib/components/ui/IngredientsTable.svelte";
+    import NutritionTable from "$lib/components/ui/NutritionTable.svelte";
+
+
 
     // Load data from +page.server.js
-    $: ({ recipe, mealPlan } = data);
+    $: ({ recipe, mealPlan, ingredients } = data);
+
     export let data;
+    
+    // Portion counter - must be declared before reactive statements that use it
+    let count = 1;
+    
+    // Calculate total recipe price using accurate conversions
+    $: totalRecipePrice = recipe.recipeIngredients
+        .map(ingredient => {
+            const ingredientData = ingredients.find(ing => ing.name === ingredient.name);
+            if (!ingredientData || !ingredientData.data || !ingredientData.data.products) return null;
+
+            const menyProduct = ingredientData.data.products.find(product =>
+                product.store && product.store.name === 'Meny'
+            );
+
+            if (!menyProduct?.current_price?.price) return null;
+
+            // Use accurate price calculation based on weight
+            const productWeight = menyProduct.weight || 100; // Default to 100g if no weight data
+            return calculateIngredientPrice(
+                ingredient.amount * count,
+                ingredient.measurement,
+                ingredient.name,
+                menyProduct.current_price.price,
+                productWeight
+            );
+        })
+        .filter(price => price !== null)
+        .reduce((sum, price) => sum + (price || 0), 0);
 
     // Do not allow the counter to go above 10
     const handlePlus = () => {
@@ -67,27 +101,30 @@
         }
     };
 
-    let count = 1;
-
     const goToMealPlan = () => {
         goto(`/plans/${data.recipe.mealPlanId}`);
     };
+    console.log(data, "HAHAH")
+
 </script>
+
 <svelte:head>
     <title>{recipe.title} {recipe.subtitle ? ` – ${recipe.subtitle}` : ''} | HalloFraiche</title>
 </svelte:head>
 
 <main>
     <div class="dark:bg-gray-900">
-        <h1 class="text-4xl text-center pb-5 pt-24 font-extrabold dark:text-white">{recipe.title}</h1>
+        <h1 class="text-4xl text-center pb-5 pt-36 font-extrabold dark:text-white">{recipe.title}</h1>
         <h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
             {recipe.subtitle}
         </h1>
 
-        <div class="flex justify-center flex-wrap mt-16 pb-40 dark:bg-gray-900 dark:text-white">
-            <div class=" p-4 rounded">
-                <h1 class="text-2xl font-extrabold dark:text-white">Ingredienser</h1>
-                <div class="flex justify-start pt-5">
+                <div class="flex justify-center flex-wrap mt-16 pb-40 dark:bg-gray-900 dark:text-white">
+            <div class="p-4 rounded max-w-2xl w-full">
+                                <h1 class="text-2xl font-extrabold dark:text-white mb-6 text-center">Ingredienser</h1>
+
+                <!-- Person Counter -->
+                <div class="flex justify-center mb-6">
                     <button on:click={handleMinus} class="pr-5">
                         <MinusCircle class="inline" />
                     </button>
@@ -100,12 +137,13 @@
                     </button>
                 </div>
 
-                {#each recipe.recipeIngredients as ingredient}
-                    <p class="pt-6 text-lg bigPaddingOnLargeScreens dark:text-gray-200">
-                        {formatAmount(ingredient.amount * count, ingredient.measurement)}
-                        <span class="pl-4 text-left">{ingredient.name}</span>
-                    </p>
-                {/each}
+                <!-- Ingredients Table -->
+                <IngredientsTable
+                    {ingredients}
+                    recipeIngredients={recipe.recipeIngredients}
+                    {count}
+                    {totalRecipePrice}
+                />
             </div>
 
             <div class="flex-grow-1  p-4 rounded">
@@ -120,12 +158,19 @@
                 {/each}
             </div>
         </div>
+
+        <!-- Nutrition Table - Outside the flex container for proper centering -->
+        <div class="flex justify-center pb-40">
+            <NutritionTable
+                {ingredients}
+                recipeIngredients={recipe.recipeIngredients}
+                {count}
+            />
+        </div>
     </div>
 </main>
 <style>
-    .bigPaddingOnLargeScreens {
-        padding-right: 10rem;
-    }
+
 
     @media (max-width: 881px) {
         .smallerTextOnSmallScreens {
@@ -134,15 +179,6 @@
 
         .hideOnSmallScreens {
             display: none;
-        }
-
-        .bigPaddingOnLargeScreens {
-            padding-right: 0rem;
-        }
-
-        .topPaddingOnSmallScreens {
-            padding: 2rem;
-            padding-top: 4rem;
         }
     }
 </style>

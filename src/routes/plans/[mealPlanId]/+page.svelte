@@ -14,7 +14,7 @@
     export let data;
 
 
-    let count = 2;
+    let count = 1;
     let price = 136.42; // Todo: store in DB lol
 
     function handlePlus() {
@@ -60,6 +60,29 @@
         <h1 class="text-slate-900 text-4xl text-center pt-24 pb-5 dark:text-white">
             {mealPlan.name}
         </h1>
+        
+        {#if mealPlan.estimatedPrice && mealPlan.estimatedPrice > 0}
+          <div class="text-center mb-6">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert total pris for ukemenyen:</span>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+              {(mealPlan.estimatedPrice * count).toFixed(2)} kr
+            </div>
+          </div>
+        {/if}
+
+
+        <div class="flex justify-evenly m-1">
+            <button on:click={handleMinus}>
+                <MinusCircle />
+            </button>
+            <span class="">
+                For {count}
+                {count === 1 ? "Person" : "Personer"}
+            </span>
+            <button on:click={handlePlus}>
+                <PlusCircle />
+            </button>
+        </div>
 
         <Listgroup
             items={mealPlan.recipes}
@@ -82,25 +105,21 @@
                         >
                             {item.subtitle}
                         </p>
+                        {#if item.estimatedPrice && item.estimatedPrice > 0}
+                          <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {(item.estimatedPrice * count).toFixed(2)} kr
+                          </p>
+                        {:else}
+                          <p class="text-xs text-gray-400 dark:text-gray-500">
+                            Pris ikke tilgjengelig
+                          </p>
+                        {/if}
                     </div>
                 </div>
             </a>
         </Listgroup>
 
-        <p class="text-center text-gray-900 mt-8 mb-4 dark:text-white">Antall Personer</p>
 
-        <div class="flex justify-evenly m-1">
-            <button on:click={handleMinus}>
-                <MinusCircle />
-            </button>
-            <span class="">
-                {count}
-                {count === 1 ? "Person" : "Personer"}
-            </span>
-            <button on:click={handlePlus}>
-                <PlusCircle />
-            </button>
-        </div>
 
         <!-- #TODO: Enable this again when Meny... allows me to save more than 1 shopping list. 🫠
 

@@ -13,6 +13,8 @@ export const load = async function ({ params }) {
 			.collection("recipes")
 			.findOne({ title: URLparameter });
 
+
+
 		// Query meal plans DB
 		const query = { title: recipeData.name };
 		const projection = { projection: { recipes: 1, name: 1 } }; // Exclude everything but the recipes
@@ -20,9 +22,19 @@ export const load = async function ({ params }) {
 			.collection("mealplans")
 			.findOne(query, projection);
 
+		// Only fetch ingredients that are actually used in this recipe
+		const recipeIngredientNames = recipeData.recipeIngredients?.map(ing => ing.name) || [];
+		const ingredients = recipeIngredientNames.length > 0
+			? await db.collection('ingredients').find({
+				name: { $in: recipeIngredientNames }
+			}).toArray()
+			: [];
+
+
 		return {
 			recipe: serializeNonPOJOs(recipeData),
 			mealPlan: serializeNonPOJOs(mealPlanData),
+			ingredients: serializeNonPOJOs(ingredients),
 		};
 		// Perform queries, updates, etc.
 	} catch (error) {
