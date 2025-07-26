@@ -63,11 +63,11 @@
         </h5>
         {#if mealPlan.estimatedPrice && mealPlan.estimatedPrice > 0}
           <div class="mt-2 text-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris:</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris</span>
             <div class="text-lg font-bold text-gray-900 dark:text-white">
               {mealPlan.estimatedPrice.toFixed(2)} kr
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">for hele ukemenyen</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Per person</span>
           </div>
         {:else}
           <div class="mt-2 text-center">
