@@ -2,6 +2,7 @@
   import { Card } from "flowbite-svelte";
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import { CookingPot, DollarSign, ArrowUp, ArrowDown } from "lucide-svelte";
 
   export let data;
   let { recipes } = data;
@@ -80,13 +81,12 @@
   <title>Søk etter oppskrifter 🔍</title>
 </svelte:head>
 
-
-
 <div class="dark:text-gray-200 dark:bg-gray-900">
 
-
-
-<h1 class="text-5xl text-center pt-24 pb-20 font-bold dark:text-white">Oppskrifter 🗒️</h1>
+<h1 class="text-5xl text-center pt-48 pb-20 font-bold dark:text-white flex items-center justify-center gap-3">
+  <CookingPot size={48} class="text-gray-700 dark:text-gray-300" />
+  Oppskrifter
+</h1>
 
 <div class="flex justify-center p-10 w-fit m-auto dark:bg-gray-900">
   <div class="flex items-center w-full max-w-4xl gap-2">
@@ -107,31 +107,23 @@
           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
         />
       </div>
-      <button type="submit" class="p-2.5 ml-2 text-sm font-medium text-white bg-slate-700 rounded-lg border border-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 dark:bg-slate-600 dark:hover:bg-slate-700 dark:focus:ring-slate-800">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-        <span class="sr-only">Søk</span>
-      </button>
     </form>
     
     <!-- Sort Button -->
     <button 
       type="button"
       on:click={toggleSort}
-      class="p-2.5 text-sm font-medium text-white bg-slate-600 rounded-lg border border-slate-600 hover:bg-slate-700 focus:ring-4 focus:outline-none focus:ring-slate-300 dark:bg-slate-500 dark:hover:bg-slate-600 dark:focus:ring-slate-800 transition-colors w-12 h-10 flex items-center justify-center"
+      class="p-2.5 text-sm font-medium text-white bg-slate-600 rounded-lg border border-slate-600 hover:bg-slate-700 focus:ring-4 focus:outline-none focus:ring-slate-300 dark:bg-slate-500 dark:hover:bg-slate-600 dark:focus:ring-slate-800 transition-colors w-14 h-10 flex items-center justify-center"
       title="Sorter etter pris"
     >
-      <div class="flex items-center justify-center w-full">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
-        </svg>
+      <div class="flex items-center justify-center w-full gap-1">
+        <DollarSign size={16} />
         {#if sortBy === 'price-asc'}
-          <span class="ml-1 text-xs">↑</span>
+          <ArrowUp size={14} />
         {:else if sortBy === 'price-desc'}
-          <span class="ml-1 text-xs">↓</span>
+          <ArrowDown size={14} />
         {:else}
-          <span class="ml-1 text-xs w-3"></span>
+          <div class="w-3.5"></div>
         {/if}
       </div>
     </button>
@@ -149,7 +141,7 @@
         {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
           <div class="mt-2 text-center">
             <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris:</span>
-            <div class="text-lg font-bold text-green-600 dark:text-green-400">
+            <div class="text-lg font-bold text-gray-900 dark:text-white">
               {recipe.estimatedPrice.toFixed(2)} kr
             </div>
             <span class="text-xs text-gray-500 dark:text-gray-400">per porsjon</span>

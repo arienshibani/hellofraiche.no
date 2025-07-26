@@ -7,7 +7,7 @@
     NavUl,
     NavHamburger,
   } from "flowbite-svelte";
-  import { CalendarCheck, CookingPot, Info } from 'lucide-svelte';
+  import { CalendarCheck, CookingPot, Info, Moon, Sun, ChefHat } from 'lucide-svelte';
 
 
   // Analytics integration
@@ -84,8 +84,11 @@
       class="px-2 bg-white/80 dark:bg-gray-900/80 sm:px-4 py-0.5 fixed w-full z-20 top-0 left-0 backdrop-blur-md"
     >
       <NavBrand href="/">
-        <div class="text-xl font-extrabold italic ml-2">
-          HALLO FRAICHE
+        <div class="flex items-center gap-2 ml-2">
+          <ChefHat size={24} class="text-gray-700 dark:text-gray-300" />
+          <div class="text-xl font-extrabold italic">
+            HALLO FRAICHE
+          </div>
         </div>
       </NavBrand>
       <button
@@ -94,7 +97,11 @@
         on:click={toggleDark}
         style="background: none; border: none; cursor: pointer;"
       >
-        {isDark ? '🌙' : '☀️'}
+        {#if isDark}
+          <Moon size={20} class="text-gray-300" />
+        {:else}
+          <Sun size={20} class="text-gray-700" />
+        {/if}
       </button>
       <NavHamburger on:click={toggle} />
       <NavUl {hidden}>

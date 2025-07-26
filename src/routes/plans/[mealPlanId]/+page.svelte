@@ -60,6 +60,15 @@
         <h1 class="text-slate-900 text-4xl text-center pt-24 pb-5 dark:text-white">
             {mealPlan.name}
         </h1>
+        
+        {#if mealPlan.estimatedPrice && mealPlan.estimatedPrice > 0}
+          <div class="text-center mb-6">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert total pris for ukemenyen:</span>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+              {mealPlan.estimatedPrice.toFixed(2)} kr
+            </div>
+          </div>
+        {/if}
 
         <Listgroup
             items={mealPlan.recipes}
@@ -82,6 +91,15 @@
                         >
                             {item.subtitle}
                         </p>
+                        {#if item.estimatedPrice && item.estimatedPrice > 0}
+                          <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {item.estimatedPrice.toFixed(2)} kr
+                          </p>
+                        {:else}
+                          <p class="text-xs text-gray-400 dark:text-gray-500">
+                            Pris ikke tilgjengelig
+                          </p>
+                        {/if}
                     </div>
                 </div>
             </a>

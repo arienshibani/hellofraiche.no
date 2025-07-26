@@ -95,9 +95,9 @@
                     </TableBodyCell>
                     <TableBodyCell class="text-center dark:text-gray-200 border-0">
                         {#if price}
-                            <span class="font-semibold text-green-600 dark:text-green-400">
-                                {price.toFixed(2)} kr
-                            </span>
+                                                    <span class="font-semibold text-gray-900 dark:text-white">
+                            {price.toFixed(2)} kr
+                        </span>
                         {:else}
                             <span class="text-gray-400">N/A</span>
                         {/if}

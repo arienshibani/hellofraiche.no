@@ -1,5 +1,6 @@
 <script>
   import { Card } from "flowbite-svelte";
+  import { Calendar } from "lucide-svelte";
 
   /**
    * The meal plans data.
@@ -7,6 +8,8 @@
    * @property {string} name - The name of the meal plan.
    * @property {string} description - The description of the meal plan.
    * @property {number} price - The price of the meal plan.
+   * @property {number} estimatedPrice - The estimated price for the entire meal plan.
+   * @property {Array<Object>} recipes - The recipes in the meal plan with estimated prices.
    */
 
   /**
@@ -28,7 +31,10 @@
 
 <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
 
-<h1 class="text-5xl text-center pt-24 font-bold dark:text-white">Ukemenyer 🗓️</h1>
+<h1 class="text-5xl text-center pt-24 pb-14 font-bold dark:text-white flex items-center justify-center gap-3">
+  <Calendar size={48} class="text-gray-700 dark:text-gray-300" />
+  Ukemenyer
+</h1>
 
 <!-- Search Bar #TODO: Make a functional search bar here -->
 <!-- <div class="flex justify-center p-10">
@@ -47,19 +53,31 @@
     </form>
 </div> -->
 
-<div class="flex justify-evenly flex-wrap max-w-6xl m-auto dark:bg-gray-900">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 dark:bg-gray-900" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); justify-content: center;">
   {#each mealPlans as mealPlan, index}
     <!-- Recipe items -->
     <Card class="border-none shadow-none bg-transparent dark:bg-transparent" padding="sm">
-      <div class="flex justify-end"></div>
       <div class="flex flex-col items-center pb-4">
-        <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
+        <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white text-center">
           {"#" + (index + 1) + " "}{mealPlan.name}
         </h5>
+        {#if mealPlan.estimatedPrice && mealPlan.estimatedPrice > 0}
+          <div class="mt-2 text-center">
+            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris:</span>
+            <div class="text-lg font-bold text-gray-900 dark:text-white">
+              {mealPlan.estimatedPrice.toFixed(2)} kr
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">for hele ukemenyen</span>
+          </div>
+        {:else}
+          <div class="mt-2 text-center">
+            <span class="text-xs text-gray-400 dark:text-gray-500">Pris ikke tilgjengelig</span>
+          </div>
+        {/if}
         <img
           src="https://placehold.co/150x150/?text={mealPlan.name[0]}"
           alt="Placeholder image"
-          class="w-40 h-40 rounded-full object-cover mt-4 mb-4"
+          class="w-32 h-32 rounded-full object-cover mt-4 mb-4"
           aria-hidden="true"
         />
         <div class="flex mt-4 space-x-3 lg:mt-6">

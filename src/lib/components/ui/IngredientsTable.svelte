@@ -150,9 +150,9 @@
                         </div>
                     </TableBodyCell>
                     <TableBodyCell class="text-right border-0">
-                        <span class="text-lg font-bold text-green-600 dark:text-green-400">
-                            {totalRecipePrice.toFixed(2)} kr
-                        </span>
+                                           <span class="text-lg font-bold text-gray-900 dark:text-white">
+                       {totalRecipePrice.toFixed(2)} kr
+                   </span>
                     </TableBodyCell>
                 </TableBodyRow>
             {/if}
