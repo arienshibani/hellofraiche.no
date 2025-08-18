@@ -19,11 +19,9 @@
     $: ({ recipe, mealPlan, ingredients } = data);
 
     export let data;
-    console.log(data, "DATA IN RECIPE PAGE");
 
     // Portion counter - must be declared before reactive statements that use it
     let count =  data?.recipe?.portions || 1;
-    
     // Get the base portion size for this recipe
     const basePortions = data?.recipe?.portions || 1;
 
