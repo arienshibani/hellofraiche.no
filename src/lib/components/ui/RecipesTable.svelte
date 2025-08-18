@@ -66,16 +66,16 @@
         }
         addError = '';
         dispatch('addIngredient', { name: detail.name, ean: detail.ean });
-        
+
         // Also update the recipe's ingredient with the EAN
         fetch(`/admin/dashboard/api/recipes/${selectedRecipe._id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                updateEAN: { 
-                    name: detail.name, 
-                    ean: detail.ean 
-                } 
+            body: JSON.stringify({
+                updateEAN: {
+                    name: detail.name,
+                    ean: detail.ean
+                }
             })
         }).then(() => {
             // Refresh to show updated recipe with EAN
@@ -94,7 +94,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ markBulk: detail.name })
             });
-            
+
             if (response.ok) {
                 dispatch('refresh');
                 closeCoverageModal();
@@ -127,8 +127,8 @@
                 {@const ingredientCount = recipe.recipeIngredients ? recipe.recipeIngredients.length : 0}
                 <TableBodyRow class="hover:bg-gray-50 dark:hover:bg-gray-700 border-0">
                     <TableBodyCell class="font-medium dark:text-white border-0">
-                        <a 
-                            href="/recipes/{recipe.title}" 
+                        <a
+                            href="/recipes/{recipe.title}"
                             class="font-bold text-lg hover:text-blue-700 transition-colors dark:text-white hover:underline cursor-pointer"
                             title="Se oppskrift"
                         >
@@ -149,7 +149,7 @@
                     </TableBodyCell>
                     <TableBodyCell class="text-center border-0">
                         {#if coverage !== undefined}
-                            <button 
+                            <button
                                 class="font-semibold {coverageColor} hover:underline cursor-pointer"
                                 on:click={() => openCoverageModal(recipe)}
                                 title="Klikk for å se detaljer"
@@ -163,14 +163,14 @@
                     {#if showAdminActions}
                         <TableBodyCell class="text-center border-0">
                             <div class="flex gap-2 justify-center">
-                                <button 
+                                <button
                                     class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm dark:bg-blue-900 transition-colors"
                                     on:click={() => dispatch('edit', recipe)}
                                     title="Rediger oppskrift"
                                 >
                                     ✍️
                                 </button>
-                                <button 
+                                <button
                                     class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm dark:bg-red-900 transition-colors"
                                     on:click={() => dispatch('delete', recipe)}
                                     title="Slett oppskrift"
@@ -188,7 +188,7 @@
 
 <!-- Coverage Modal -->
 {#if showCoverageModal && selectedRecipe}
-    <CoverageModal 
+    <CoverageModal
         {selectedRecipe}
         {allIngredients}
         on:close={closeCoverageModal}
@@ -199,9 +199,9 @@
 
 <!-- Add Ingredient Modal -->
 {#if showAddModal}
-    <AddIngredientModal 
+    <AddIngredientModal
         name={addName}
         on:close={closeAddModal}
         on:addIngredient={handleAddIngredient}
     />
-{/if} 
+{/if}
