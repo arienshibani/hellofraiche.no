@@ -19,10 +19,14 @@
     $: ({ recipe, mealPlan, ingredients } = data);
 
     export let data;
-    
+    console.log(data, "DATA IN RECIPE PAGE");
+
     // Portion counter - must be declared before reactive statements that use it
-    let count = 1;
+    let count =  data?.recipe?.portions || 1;
     
+    // Get the base portion size for this recipe
+    const basePortions = data?.recipe?.portions || 1;
+
     // Calculate total recipe price using accurate conversions
     $: totalRecipePrice = recipe.recipeIngredients
         .map(ingredient => {
@@ -35,10 +39,15 @@
 
             if (!menyProduct?.current_price?.price) return null;
 
+            // Calculate the correct scaling factor
+            // ingredient.amount is already for basePortions, so we scale by (count / basePortions)
+            const scalingFactor = count / basePortions;
+            const scaledAmount = ingredient.amount * scalingFactor;
+
             // Use accurate price calculation based on weight
             const productWeight = menyProduct.weight || 100; // Default to 100g if no weight data
             return calculateIngredientPrice(
-                ingredient.amount * count,
+                scaledAmount,
                 ingredient.measurement,
                 ingredient.name,
                 menyProduct.current_price.price,
@@ -130,7 +139,9 @@
                     </button>
                     <h2 class="text-1xl text-gray-900 dark:text-white">
                         {count}
-                        {count === 1 ? "Person  " : "Personer"}
+                        <span class="inline-block w-20 text-left">
+                            {count === 1 ? "Person" : "Personer"}
+                        </span>
                     </h2>
                     <button on:click={handlePlus} class="pl-5">
                         <PlusCircle class="inline" />
@@ -143,6 +154,7 @@
                     recipeIngredients={recipe.recipeIngredients}
                     {count}
                     {totalRecipePrice}
+                    basePortions={basePortions}
                 />
             </div>
 
@@ -165,6 +177,7 @@
                 {ingredients}
                 recipeIngredients={recipe.recipeIngredients}
                 {count}
+                basePortions={basePortions}
             />
         </div>
     </div>

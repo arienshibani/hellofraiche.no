@@ -11,6 +11,7 @@
     export let recipeIngredients: RecipeIngredient[] = []; // Recipe ingredients (name, amount, measurement)
     export let count = 1;
     export let totalRecipePrice = 0;
+    export let basePortions = 1; // Base portion size for the recipe
 
     // Shopping list state
     let checkedIngredients: Set<string> = new Set();
@@ -64,11 +65,16 @@
         const productPrice = menyProduct.current_price.price;
         const productWeight = menyProduct.weight || 100; // Default to 100g if no weight data
 
-        console.log(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, total: ${recipeIngredient.amount * count}`);
+        // Calculate the correct scaling factor
+        // ingredient.amount is already for basePortions, so we scale by (count / basePortions)
+        const scalingFactor = count / basePortions;
+        const scaledAmount = recipeIngredient.amount * scalingFactor;
+
+        console.log(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, basePortions: ${basePortions}, scalingFactor: ${scalingFactor}, scaledAmount: ${scaledAmount}`);
 
         // Use the conversion function for accurate pricing
         return calculateIngredientPrice(
-            recipeIngredient.amount * count,
+            scaledAmount,
             recipeIngredient.measurement,
             recipeIngredient.name,
             productPrice,
@@ -165,7 +171,7 @@
                     <TableBodyCell class="font-medium dark:text-white border-0 text-sm">
                         <div class="flex items-center">
                             <span class="text-gray-500 dark:text-gray-400 font-normal min-w-[3rem] text-right">
-                                {formatAmount(ingredient.amount * count, ingredient.measurement)}
+                                {formatAmount(ingredient.amount * (count / basePortions), ingredient.measurement)}
                             </span>
                             <span class="ml-3 flex-1 {isChecked ? 'line-through text-gray-500 dark:text-gray-400' : ''}">
                                 {ingredient.name}
