@@ -7,6 +7,7 @@
     export let ingredients: IngredientWithPrice[] = [];
     export let recipeIngredients: RecipeIngredient[] = [];
     export let count = 1;
+    export let basePortions = 1; // Base portion size for the recipe
 
     // Function to find ingredient data
     function findIngredientData(ingredientName: string): IngredientWithPrice | null {
@@ -18,8 +19,13 @@
         const ingredientData = findIngredientData(recipeIngredient.name);
         if (!ingredientData || !ingredientData.data || !ingredientData.data.nutrition) return acc;
 
+        // Calculate the correct scaling factor
+        // ingredient.amount is already for basePortions, so we scale by (count / basePortions)
+        const scalingFactor = count / basePortions;
+        const scaledAmount = recipeIngredient.amount * scalingFactor;
+
         // Use accurate conversion for weight calculation
-        const recipeWeight = convertToGrams(recipeIngredient.amount * count, recipeIngredient.measurement, recipeIngredient.name);
+        const recipeWeight = convertToGrams(scaledAmount, recipeIngredient.measurement, recipeIngredient.name);
         acc.totalWeight += recipeWeight;
 
         // Calculate nutrition based on weight ratio
@@ -33,12 +39,12 @@
         }) => {
             const existing = acc.nutrition.find(item => item.code === nutritionItem.code);
             if (existing) {
-                existing.amount += nutritionItem.amount * (recipeIngredient.amount * count);
+                existing.amount += nutritionItem.amount * scaledAmount;
             } else {
                 acc.nutrition.push({
                     code: nutritionItem.code,
                     display_name: nutritionItem.display_name,
-                    amount: nutritionItem.amount * (recipeIngredient.amount * count),
+                    amount: nutritionItem.amount * scaledAmount,
                     unit: nutritionItem.unit
                 });
             }

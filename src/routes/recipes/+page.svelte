@@ -2,7 +2,7 @@
   import { Card } from "flowbite-svelte";
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import { CookingPot, DollarSign, ArrowUp, ArrowDown } from "lucide-svelte";
+  import { CookingPot, DollarSign, ArrowUp, ArrowDown, Vegan, WheatOff, MilkOff  } from "lucide-svelte";
 
   export let data;
   let { recipes } = data;
