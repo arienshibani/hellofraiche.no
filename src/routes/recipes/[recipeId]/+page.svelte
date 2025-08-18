@@ -120,13 +120,13 @@
 </script>
 
 <svelte:head>
-    <title>{recipe.title} {recipe.subtitle ? ` – ${recipe.subtitle}` : ''} | HalloFraiche</title>
+    <title>{recipe.title} {recipe.subtitle ? ` ${recipe.subtitle}` : ''} | HalloFraiche</title>
 </svelte:head>
 
 <main>
     <div class="dark:bg-gray-900">
         <h1 class="text-4xl text-center pb-5 pt-36 font-extrabold dark:text-white">{recipe.title}</h1>
-        <h1 class="text-2xl text-center hideOnSmallScreens smallerTextOnSmallScreens dark:text-gray-300">
+        <h1 class="text-2xl text-center smallerTextOnSmallScreens dark:text-gray-300">
             {recipe.subtitle}
         </h1>
 
