@@ -1,7 +1,7 @@
 // Ingredient densities (g/ml for liquids, g/cm³ for solids)
 const INGREDIENT_DENSITIES: Record<string, number> = {
   // Liquids
-  'Matfløte': 1.02,
+  'Matfløte': 1.02,  // Heavy cream
   'Kremfløte': 1.00,
   'Melk': 1.03,
   'Vann': 1.00,
@@ -29,6 +29,13 @@ const INGREDIENT_DENSITIES: Record<string, number> = {
   'Natron': 2.20,
   'Kakao': 0.55,
   'Kaffe': 0.40,
+  
+  // Norwegian-specific ingredients
+  'Rømme': 1.05,      // Sour cream
+  'Kvarg': 1.10,      // Quark/curd cheese
+  'Brunost': 1.15,    // Brown cheese
+  'Geitost': 1.12,    // Goat cheese
+  'Lefse': 0.45,      // Norwegian flatbread
 
   // Default density for unknown liquids
   'default_liquid': 1.00,
@@ -53,6 +60,18 @@ const PACKAGE_SIZES: Record<string, number> = {
   'Chili': 15,
   'Ingefær': 20,
   'Kurkuma': 5,
+
+  // Norwegian-specific units
+  'Hvitløk': 50,      // båt (clove) - average weight per clove
+  'Sukkererter': 100, // pk (package) - typical frozen pea package
+  'Ruccola': 60,      // pk (package) - typical arugula package
+  'Mynte': 30,        // potte (pot) - small herb pot
+  
+  // Additional common Norwegian ingredients
+  'Basilikum': 25,    // potte (potted basil)
+  'Persille': 20,     // potte (potted parsley)
+  'Timian': 15,       // potte (potted thyme)
+  'Rosmarin': 20,     // potte (potted rosemary)
 
   // Default size for unknown items
   'default': 50,
@@ -101,6 +120,42 @@ export function convertToGrams(amount: number, measurement: string, ingredientNa
   // Handle count-based units
   if (unit === 'stk' || unit === 'boks' || unit === 'pakke') {
     return convertCountToWeight(amount, ingredientName);
+  }
+
+  // Handle Norwegian-specific units
+  if (unit === 'båt') {
+    // båt = clove (for garlic)
+    return convertCountToWeight(amount, ingredientName);
+  }
+
+  if (unit === 'pk') {
+    // pk = package (for pre-packaged items)
+    return convertCountToWeight(amount, ingredientName);
+  }
+
+  if (unit === 'potte') {
+    // potte = pot (for potted herbs)
+    return convertCountToWeight(amount, ingredientName);
+  }
+
+  if (unit === 'ml') {
+    // ml = milliliters (volume unit)
+    return convertVolumeToWeight(amount, ingredientName);
+  }
+
+  if (unit === 'l') {
+    // l = liters (volume unit)
+    return convertVolumeToWeight(amount * 1000, ingredientName);
+  }
+
+  if (unit === 'klype') {
+    // klype = pinch (very small amount)
+    return amount * 0.5; // Approximately 0.5g per pinch
+  }
+
+  if (unit === 'knivspiss') {
+    // knivspiss = knife tip (very small amount)
+    return amount * 0.3; // Approximately 0.3g per knife tip
   }
 
   // Unknown unit - return amount as-is (assume grams)

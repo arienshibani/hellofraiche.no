@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { dev } from '$app/environment';
     import { Table, TableBody, TableBodyRow, TableBodyCell, TableHead, TableHeadCell } from "flowbite-svelte";
     import { formatAmount } from "$lib/util/formatAmount.js";
     import { calculateIngredientPrice, getPackageSize, getIngredientDensity } from "$lib/util/conversions";
@@ -15,14 +16,18 @@
 
     // Shopping list state
     let checkedIngredients: Set<string> = new Set();
-    
+
     // Tooltip state for mobile/desktop
     let showTooltip = false;
 
     // Reactive ingredient prices
     $: ingredientPrices = recipeIngredients.map(ingredient => {
         const price = calculateIngredientPriceAccurate(ingredient);
-        console.log(`DEBUG: ${ingredient.name} - count: ${count}, amount: ${ingredient.amount}, price: ${price}`);
+
+        if (dev) {
+            console.log(`DEBUG: ${ingredient.name} - count: ${count}, amount: ${ingredient.amount}, price: ${price}`);
+        }
+
         return {
             ingredient,
             price,
@@ -70,7 +75,9 @@
         const scalingFactor = count / basePortions;
         const scaledAmount = recipeIngredient.amount * scalingFactor;
 
-        console.log(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, basePortions: ${basePortions}, scalingFactor: ${scalingFactor}, scaledAmount: ${scaledAmount}`);
+        if (dev) {
+            console.log(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, basePortions: ${basePortions}, scalingFactor: ${scalingFactor}, scaledAmount: ${scaledAmount}`);
+        }
 
         // Use the conversion function for accurate pricing
         return calculateIngredientPrice(
@@ -107,7 +114,7 @@
             const pricePerLiter = (productPrice / productVolume) * 1000;
             return `${pricePerLiter.toFixed(2)} kr/l`;
         }
-        
+
         // Fallback to per 100g
         const pricePer100g = (productPrice / productWeight) * 100;
         return `${pricePer100g.toFixed(2)} kr/100g`;
@@ -138,13 +145,13 @@
                                 >
                                     <HelpCircle class="h-4 w-4" />
                                 </button>
-                                
+
                                 {#if showTooltip}
                                     <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl w-56 z-[9999] whitespace-normal">
                                         <p class="leading-relaxed text-center">
                                             Faktisk pris kan variere og estimeres utifra at hver ingrediens er kjøpt i den mengden som er oppgitt i oppskriften.
                                         </p>
-                                        <button 
+                                        <button
                                             class="absolute top-2 right-2 text-gray-400 hover:text-white text-lg"
                                             on:click={() => showTooltip = false}
                                         >
@@ -162,7 +169,7 @@
                     </TableBodyCell>
                 </TableBodyRow>
             {/if}
-            
+
             {#each ingredientPrices as { ingredient, price: ingredientPrice, menyProduct, isChecked }}
                 <TableBodyRow
                     class="hover:bg-gray-50 dark:hover:bg-gray-700 border-0 cursor-pointer"
