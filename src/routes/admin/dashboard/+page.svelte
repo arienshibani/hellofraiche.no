@@ -3,7 +3,8 @@
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
   import { Tabs, TabItem } from 'flowbite-svelte';
-  
+  import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
+
   onMount(() => {
     // Simulate a small delay to show loading state, then hide it
     setTimeout(() => {
@@ -18,6 +19,31 @@
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];
   let isLoading = true;
+
+  // Search functionality
+  let recipeSearchTerm = '';
+  let ingredientSearchTerm = '';
+
+  // Filtered results
+  $: filteredRecipes = recipes.filter(recipe => 
+    recipe.title?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe.subtitle?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe.mealPlanId?.toLowerCase().includes(recipeSearchTerm.toLowerCase())
+  );
+
+  $: filteredIngredients = allIngredients.filter(ingredient => 
+    ingredient.name?.toLowerCase().includes(ingredientSearchTerm.toLowerCase()) ||
+    ingredient.ean?.includes(ingredientSearchTerm)
+  );
+
+  // Clear search functions
+  function clearRecipeSearch() {
+    recipeSearchTerm = '';
+  }
+
+  function clearIngredientSearch() {
+    ingredientSearchTerm = '';
+  }
 
 
   let showModal = false;
@@ -40,8 +66,17 @@
     recipeId: ''
   };
   let newStep = '';
-  let newIngredient = { name: '', amount: 0, measurement: '' };
+  let newIngredient = { name: '', amount: 0, measurement: 'stk' };
   let selectedIngredientId = '';
+
+  // Searchable dropdown state
+  let dropdownIngredientSearch = '';
+  let showIngredientDropdown = false;
+
+  // Filtered ingredients for dropdown
+  $: filteredDropdownIngredients = allIngredients.filter(ingredient =>
+    ingredient.name?.toLowerCase().includes(dropdownIngredientSearch.toLowerCase())
+  );
 
   // Ingredient modal state
   let showIngredientModal = false;
@@ -81,6 +116,8 @@
     newStep = '';
     newIngredient = { name: '', amount: 0, measurement: '' };
     selectedIngredientId = '';
+    dropdownIngredientSearch = '';
+    showIngredientDropdown = false;
     error = '';
     showModal = true;
     isCreating = true;
@@ -121,9 +158,31 @@
         ];
         newIngredient = { name: '', amount: 0, measurement: '' };
         selectedIngredientId = '';
+        dropdownIngredientSearch = '';
+        showIngredientDropdown = false;
       }
     }
   }
+
+  function selectIngredient(ingredient) {
+    selectedIngredientId = ingredient._id;
+    dropdownIngredientSearch = ingredient.name;
+    showIngredientDropdown = false;
+  }
+
+  function toggleIngredientDropdown() {
+    showIngredientDropdown = !showIngredientDropdown;
+    if (showIngredientDropdown) {
+      dropdownIngredientSearch = '';
+    }
+  }
+
+  function clearIngredientSelection() {
+    selectedIngredientId = '';
+    dropdownIngredientSearch = '';
+    showIngredientDropdown = false;
+  }
+
   function removeIngredient(idx) {
     formRecipe.recipeIngredients = formRecipe.recipeIngredients.filter((_, i) => i !== idx);
   }
@@ -230,11 +289,32 @@
     if (showModal && event.key === 'Escape') {
       closeModal();
     }
+
+    // Search shortcuts: Ctrl+F for recipe search, Ctrl+Shift+F for ingredient search
+    if (event.ctrlKey && event.key === 'f' && !event.shiftKey) {
+      event.preventDefault();
+      document.querySelector('input[placeholder*="oppskrifter"]')?.focus();
+    }
+    if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+      event.preventDefault();
+      document.querySelector('input[placeholder*="ingredienser"]')?.focus();
+    }
+  }
+
+  // Close dropdown when clicking outside
+  function handleClickOutside(event) {
+    if (showIngredientDropdown && !event.target.closest('.ingredient-dropdown')) {
+      showIngredientDropdown = false;
+    }
   }
 
   onMount(() => {
     window.addEventListener('keydown', handleKeydown);
-    return () => window.removeEventListener('keydown', handleKeydown);
+    window.addEventListener('click', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener('click', handleClickOutside);
+    };
   });
 
   function openEditIngredient(ingredient) {
@@ -375,7 +455,7 @@
     <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
       <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
     </div>
-    
+
     {#if isLoading}
       <!-- Loading Spinner -->
       <div class="flex items-center justify-center min-h-[60vh]">
@@ -386,7 +466,7 @@
       </div>
     {:else}
       <div class="w-full mt-8">
-        <Tabs class="justify-center">
+        <Tabs class="justify-center custom-tabs">
         <TabItem open={true} title="📖 Oppskrifter">
           <div class="max-h-[70vh] overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col gap-4 w-full">
             <div class="flex items-center mb-4 justify-between flex-row-reverse">
@@ -399,8 +479,42 @@
                 <span class="font-medium">Ny oppskrift</span>
               </button>
             </div>
+
+            <!-- Recipe Search Bar -->
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Søk etter oppskrifter..."
+                bind:value={recipeSearchTerm}
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+              />
+              {#if recipeSearchTerm}
+                <button
+                  on:click={clearRecipeSearch}
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  title="Tøm søk"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              {/if}
+            </div>
+
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              Viser {filteredRecipes.length} av {recipes.length} oppskrifter
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-500 mb-2">
+              💡 Søk etter tittel, undertittel eller meal plan ID • Ctrl+F for hurtigsøk
+            </div>
+
             <RecipesTable
-              {recipes}
+              recipes={filteredRecipes}
               {allIngredients}
               showAdminActions={true}
               on:edit={(event) => openModal(event.detail)}
@@ -431,6 +545,39 @@
               </button>
             </div>
 
+            <!-- Ingredient Search Bar -->
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Søk etter ingredienser..."
+                bind:value={ingredientSearchTerm}
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+              />
+              {#if ingredientSearchTerm}
+                <button
+                  on:click={clearIngredientSearch}
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  title="Tøm søk"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              {/if}
+            </div>
+
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              Viser {filteredIngredients.length} av {allIngredients.length} ingredienser
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-500 mb-2">
+              💡 Søk etter navn eller EAN-nummer • Ctrl+Shift+F for hurtigsøk
+            </div>
+
             <IngredientsAlert {allIngredients} />
 
 
@@ -439,7 +586,7 @@
             </div>
 
             <IngredientsAdminTable
-              ingredients={allIngredients}
+              ingredients={filteredIngredients}
               showAdminActions={true}
               on:edit={(event) => openEditIngredient(event.detail)}
               on:delete={(event) => openDeleteModal(event.detail, 'ingredient')}
@@ -511,14 +658,84 @@
             <div>
               <label class="block text-sm font-medium mb-1">Ingredienser</label>
               <div class="flex gap-2 mb-2">
-                <select class="flex-1 border rounded p-2" bind:value={selectedIngredientId}>
-                  <option value="">Velg ingrediens</option>
-                  {#each allIngredients as ingredient}
-                    <option value={ingredient._id}>{ingredient.name}</option>
-                  {/each}
+                <!-- Custom Searchable Dropdown -->
+                <div class="flex-1 relative ingredient-dropdown">
+                  <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded  bg-white dark:bg-gray-700 dark:text-white transition-all duration-200 {showIngredientDropdown ? 'ring-2 ring-blue-500 border-blue-500' : ''}">
+                    <input
+                      type="text"
+                      placeholder={showIngredientDropdown ? "Skriv for å søke..." : "Søk etter ingrediens..."}
+                      bind:value={dropdownIngredientSearch}
+                      on:click={toggleIngredientDropdown}
+                      on:focus={toggleIngredientDropdown}
+                      class="flex-1 outline-none bg-transparent transition-colors duration-200"
+                      readonly={!showIngredientDropdown}
+                    />
+                    {#if selectedIngredientId && !showIngredientDropdown}
+                      <button
+                        type="button"
+                        on:click={clearIngredientSelection}
+                        class="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        title="Tøm valg"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    {:else if !showIngredientDropdown}
+                      <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    {/if}
+                  </div>
+
+                  <!-- Dropdown Menu -->
+                  {#if showIngredientDropdown}
+                    <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <!-- Ingredient List -->
+                      <div class="py-1">
+                        {#if filteredDropdownIngredients.length === 0}
+                          <div class="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm">
+                            Ingen ingredienser funnet
+                          </div>
+                        {:else}
+                          {#each filteredDropdownIngredients as ingredient}
+                            <button
+                              type="button"
+                              on:click={() => selectIngredient(ingredient)}
+                              class="w-full text-left px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white text-sm"
+                            >
+                              {ingredient.name}
+                            </button>
+                          {/each}
+                        {/if}
+                      </div>
+                    </div>
+                  {/if}
+                </div>
+
+                <input class="w-24 border rounded" type="number" min="0" step="any" placeholder="Mengde" bind:value={newIngredient.amount} />
+                <select class="w-28 border rounded p-2 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" bind:value={newIngredient.measurement}>
+                  <optgroup label="Stykker">
+                    {#each ['stk', 'boks', 'pakke', 'båt', 'pk', 'potte'] as unit}
+                      <option value={unit} selected={unit === 'stk'}>{unit}</option>
+                    {/each}
+                  </optgroup>
+                  <optgroup label="Vekt">
+                    {#each ['g', 'kg'] as unit}
+                      <option value={unit}>{unit}</option>
+                    {/each}
+                  </optgroup>
+                  <optgroup label="Volum">
+                    {#each ['ml', 'l', 'dl', 'ss', 'ts'] as unit}
+                      <option value={unit}>{unit}</option>
+                    {/each}
+                  </optgroup>
+                  <optgroup label="Små mengder">
+                    {#each ['klype', 'knivspiss'] as unit}
+                      <option value={unit}>{unit}</option>
+                    {/each}
+                  </optgroup>
                 </select>
-                <input class="w-24 border rounded p-2" type="number" min="0" step="any" placeholder="Mengde" bind:value={newIngredient.amount} />
-                <input class="w-24 border rounded p-2" placeholder="Måleenhet" bind:value={newIngredient.measurement} />
                 <button type="button" class="bg-blue-600 text-white px-3 py-1 rounded" on:click={addIngredient}>Legg til</button>
               </div>
               <ul class="ml-6">
@@ -587,3 +804,30 @@
     </div>
   </div>
 {/if}
+
+<style>
+  /* Custom tab styling for dark mode */
+  @media (prefers-color-scheme: dark) {
+    :global(.custom-tabs .tab-item) {
+      background-color: rgb(31 41 55) !important; /* gray-800 */
+      color: rgb(209 213 219) !important; /* gray-300 */
+      border-color: rgb(75 85 99) !important; /* gray-600 */
+    }
+
+    :global(.custom-tabs .tab-item:hover) {
+      background-color: rgb(55 65 81) !important; /* gray-700 */
+      color: rgb(229 231 235) !important; /* gray-200 */
+    }
+
+    :global(.custom-tabs .tab-item.active) {
+      background-color: rgb(37 99 235) !important; /* blue-600 */
+      color: rgb(255 255 255) !important; /* white */
+      border-color: rgb(37 99 235) !important; /* blue-600 */
+    }
+
+    :global(.custom-tabs .tab-item.active:hover) {
+      background-color: rgb(29 78 216) !important; /* blue-700 */
+      color: rgb(255 255 255) !important; /* white */
+    }
+  }
+</style>

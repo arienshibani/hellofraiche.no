@@ -1,5 +1,68 @@
 import { debugLog } from '$lib/util/logger';
 
+// All supported measurement units in the system
+export const MEASUREMENT_UNITS = {
+  // Weight units
+  WEIGHT: ['g', 'kg'] as const,
+  
+  // Volume units
+  VOLUME: ['ml', 'l', 'dl', 'ss', 'ts'] as const,
+  
+  // Count-based units
+  COUNT: ['stk', 'boks', 'pakke', 'båt', 'pk', 'potte'] as const,
+  
+  // Small amount units
+  SMALL_AMOUNTS: ['klype', 'knivspiss'] as const,
+} as const;
+
+// Measurement unit descriptions and translations
+export const MEASUREMENT_UNIT_INFO: Record<MeasurementUnit, { 
+  name: string; 
+  description: string; 
+  category: string;
+  conversionFactor?: number; // For units that convert to base units
+}> = {
+  // Weight units
+  'g': { name: 'Gram', description: 'Gram (weight)', category: 'Weight' },
+  'kg': { name: 'Kilogram', description: 'Kilogram (weight)', category: 'Weight', conversionFactor: 1000 },
+  
+  // Volume units
+  'ml': { name: 'Milliliter', description: 'Milliliter (volume)', category: 'Volume' },
+  'l': { name: 'Liter', description: 'Liter (volume)', category: 'Volume', conversionFactor: 1000 },
+  'dl': { name: 'Desiliter', description: 'Desiliter (volume)', category: 'Volume', conversionFactor: 100 },
+  'ss': { name: 'Spiseskje', description: 'Spiseskje (tablespoon)', category: 'Volume', conversionFactor: 15 },
+  'ts': { name: 'Teske', description: 'Teske (teaspoon)', category: 'Volume', conversionFactor: 5 },
+  
+  // Count-based units
+  'stk': { name: 'Stykke', description: 'Stykke (piece)', category: 'Count' },
+  'boks': { name: 'Boks', description: 'Boks (box)', category: 'Count' },
+  'pakke': { name: 'Pakke', description: 'Pakke (package)', category: 'Count' },
+  'båt': { name: 'Båt', description: 'Båt (clove)', category: 'Count' },
+  'pk': { name: 'Pakke', description: 'Pakke (package)', category: 'Count' },
+  'potte': { name: 'Potte', description: 'Potte (pot)', category: 'Count' },
+  
+  // Small amount units
+  'klype': { name: 'Klype', description: 'Klype (pinch)', category: 'Small Amount', conversionFactor: 0.5 },
+  'knivspiss': { name: 'Knivspiss', description: 'Knivspiss (knife tip)', category: 'Small Amount', conversionFactor: 0.3 },
+} as const;
+
+// Flattened array of all measurement units
+export const ALL_MEASUREMENT_UNITS = [
+  ...MEASUREMENT_UNITS.WEIGHT,
+  ...MEASUREMENT_UNITS.VOLUME,
+  ...MEASUREMENT_UNITS.COUNT,
+  ...MEASUREMENT_UNITS.SMALL_AMOUNTS,
+] as const;
+
+// Type for measurement units (union of all possible values)
+export type MeasurementUnit = typeof ALL_MEASUREMENT_UNITS[number];
+
+// Type for specific measurement categories
+export type WeightUnit = typeof MEASUREMENT_UNITS.WEIGHT[number];
+export type VolumeUnit = typeof MEASUREMENT_UNITS.VOLUME[number];
+export type CountUnit = typeof MEASUREMENT_UNITS.COUNT[number];
+export type SmallAmountUnit = typeof MEASUREMENT_UNITS.SMALL_AMOUNTS[number];
+
 // Ingredient densities (g/ml for liquids, g/cm³ for solids)
 const INGREDIENT_DENSITIES: Record<string, number> = {
   // Liquids
@@ -206,9 +269,29 @@ export function calculateIngredientPrice(
 ): number | null {
   if (!productPrice || !productWeight) return null;
 
+  const unit = recipeMeasurement.toLowerCase();
+
+  // For count-based units (stk, boks, pakke, båt, pk, potte), calculate price directly
+  if (unit === 'stk' || unit === 'boks' || unit === 'pakke' || unit === 'båt' || unit === 'pk' || unit === 'potte') {
+    // Calculate price per unit, then multiply by recipe amount
+    const pricePerUnit = productPrice; // Product price is already per unit
+    const totalPrice = recipeAmount * pricePerUnit;
+    
+    // Debug logging for count-based units
+    debugLog(`Count-based pricing for ${ingredientName}: ${recipeAmount} ${unit} × ${pricePerUnit} kr = ${totalPrice} kr`);
+    
+    return totalPrice;
+  }
+
+  // For weight and volume units, convert to grams first
   const recipeWeight = convertToGrams(recipeAmount, recipeMeasurement, ingredientName);
   const pricePerGram = productPrice / productWeight;
-  return recipeWeight * pricePerGram;
+  const totalPrice = recipeWeight * pricePerGram;
+  
+      // Debug logging for weight/volume units
+    debugLog(`Weight-based pricing for ${ingredientName}: ${recipeAmount} ${unit} → ${recipeWeight}g × ${pricePerGram.toFixed(4)} kr/g = ${totalPrice} kr`);
+  
+  return totalPrice;
 }
 
 /**
@@ -288,4 +371,128 @@ export function getAllDensities(): Record<string, number> {
  */
 export function getAllPackageSizes(): Record<string, number> {
   return { ...PACKAGE_SIZES };
+}
+
+/**
+ * Check if a measurement unit is a weight unit
+ * @param {string} unit - The measurement unit to check
+ * @returns {boolean} - True if it's a weight unit
+ */
+export function isWeightUnit(unit: string): unit is WeightUnit {
+  return MEASUREMENT_UNITS.WEIGHT.includes(unit as WeightUnit);
+}
+
+/**
+ * Check if a measurement unit is a volume unit
+ * @param {string} unit - The measurement unit to check
+ * @returns {boolean} - True if it's a volume unit
+ */
+export function isVolumeUnit(unit: string): unit is VolumeUnit {
+  return MEASUREMENT_UNITS.VOLUME.includes(unit as VolumeUnit);
+}
+
+/**
+ * Check if a measurement unit is a count unit
+ * @param {string} unit - The measurement unit to check
+ * @returns {boolean} - True if it's a count unit
+ */
+export function isCountUnit(unit: string): unit is CountUnit {
+  return MEASUREMENT_UNITS.COUNT.includes(unit as CountUnit);
+}
+
+/**
+ * Check if a measurement unit is a small amount unit
+ * @param {string} unit - The measurement unit to check
+ * @returns {boolean} - True if it's a small amount unit
+ */
+export function isSmallAmountUnit(unit: string): unit is SmallAmountUnit {
+  return MEASUREMENT_UNITS.SMALL_AMOUNTS.includes(unit as SmallAmountUnit);
+}
+
+/**
+ * Get the category of a measurement unit
+ * @param {string} unit - The measurement unit to check
+ * @returns {string} - The category name
+ */
+export function getMeasurementUnitCategory(unit: string): string {
+  if (isWeightUnit(unit)) return 'Weight';
+  if (isVolumeUnit(unit)) return 'Volume';
+  if (isCountUnit(unit)) return 'Count';
+  if (isSmallAmountUnit(unit)) return 'Small Amount';
+  return 'Unknown';
+}
+
+/**
+ * Get all measurement units for a specific category
+ * @param {string} category - The category name
+ * @returns {string[]} - Array of measurement units in that category
+ */
+export function getMeasurementUnitsByCategory(category: string): string[] {
+  switch (category.toLowerCase()) {
+    case 'weight':
+      return [...MEASUREMENT_UNITS.WEIGHT];
+    case 'volume':
+      return [...MEASUREMENT_UNITS.VOLUME];
+    case 'count':
+      return [...MEASUREMENT_UNITS.COUNT];
+    case 'small amount':
+      return [...MEASUREMENT_UNITS.SMALL_AMOUNTS];
+    default:
+      return [];
+  }
+}
+
+/**
+ * Get measurement unit information
+ * @param {string} unit - The measurement unit
+ * @returns {object} - Unit information including name, description, and category
+ */
+export function getMeasurementUnitInfo(unit: string) {
+  return MEASUREMENT_UNIT_INFO[unit as MeasurementUnit] || null;
+}
+
+/**
+ * Get all measurement units with their information
+ * @returns {object} - All measurement units with their details
+ */
+export function getAllMeasurementUnitsWithInfo() {
+  return MEASUREMENT_UNIT_INFO;
+}
+
+/**
+ * Validate if a measurement unit is supported
+ * @param {string} unit - The measurement unit to validate
+ * @returns {boolean} - True if the unit is supported
+ */
+export function isValidMeasurementUnit(unit: string): unit is MeasurementUnit {
+  return ALL_MEASUREMENT_UNITS.includes(unit as MeasurementUnit);
+}
+
+/**
+ * Get measurement units grouped by category for UI display
+ * @returns {object} - Measurement units organized by category
+ */
+export function getMeasurementUnitsGrouped() {
+  return {
+    'Weight': MEASUREMENT_UNITS.WEIGHT.map(unit => ({
+      value: unit,
+      label: MEASUREMENT_UNIT_INFO[unit].name,
+      description: MEASUREMENT_UNIT_INFO[unit].description
+    })),
+    'Volume': MEASUREMENT_UNITS.VOLUME.map(unit => ({
+      value: unit,
+      label: MEASUREMENT_UNIT_INFO[unit].name,
+      description: MEASUREMENT_UNIT_INFO[unit].description
+    })),
+    'Count': MEASUREMENT_UNITS.COUNT.map(unit => ({
+      value: unit,
+      label: MEASUREMENT_UNIT_INFO[unit].name,
+      description: MEASUREMENT_UNIT_INFO[unit].description
+    })),
+    'Small Amounts': MEASUREMENT_UNITS.SMALL_AMOUNTS.map(unit => ({
+      value: unit,
+      label: MEASUREMENT_UNIT_INFO[unit].name,
+      description: MEASUREMENT_UNIT_INFO[unit].description
+    }))
+  };
 }

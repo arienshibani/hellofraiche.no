@@ -26,6 +26,9 @@
     // Get the base portion size for this recipe
     const basePortions = data?.recipe?.portions || 1;
 
+    debugLog(data.ingredients);
+
+
     // Calculate total recipe price using accurate conversions
     $: totalRecipePrice = recipe.recipeIngredients
         .map(ingredient => {

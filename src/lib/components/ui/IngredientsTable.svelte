@@ -90,11 +90,9 @@
         const unit = measurement.toLowerCase();
 
         // For count-based units, show price per item
-        if (unit === 'stk' || unit === 'boks' || unit === 'pakke') {
-            const packageSize = getPackageSize(ingredientName);
-            const itemsInPackage = productWeight / packageSize;
-            const pricePerItem = productPrice / itemsInPackage;
-            return `${pricePerItem.toFixed(2)} kr/stk`;
+        if (unit === 'stk' || unit === 'boks' || unit === 'pakke' || unit === 'båt' || unit === 'pk' || unit === 'potte') {
+            // For count-based units, the product price is already per unit
+            return `${productPrice.toFixed(2)} kr/${unit}`;
         }
 
         // For weight units, show price per kg
