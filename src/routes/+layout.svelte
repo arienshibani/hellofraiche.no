@@ -29,16 +29,20 @@
     if (saved === 'dark') {
       isDark = true;
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else if (saved === 'light') {
       isDark = false;
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     } else {
       // No saved preference, use system
       isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (isDark) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
       }
     }
   }
@@ -47,9 +51,11 @@
     isDark = !isDark;
     if (isDark) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }

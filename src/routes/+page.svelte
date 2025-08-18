@@ -4,6 +4,8 @@
     import InfiniteScroll from "$lib/components/ui/infinite-scroll/InfiniteScroll.svelte";
     import { goto } from "$app/navigation";
     import FeatureList from "$lib/components/ui/feature-list/FeatureList.svelte";
+    import { onMount } from "svelte";
+    import { Utensils } from "lucide-svelte";
 
     // Retreived from +server.js load function
     export let data;
@@ -11,11 +13,19 @@
 
     let onPhone;
     let mediaQ = "xl";
+    let isLoaded = false;
+
     if (typeof window !== "undefined") {
         onPhone = window.matchMedia("(min-width: 600px)");
         mediaQ = onPhone.matches ? "xl" : "xs";
     }
 
+    onMount(() => {
+        // Small delay to ensure layout calculations are complete
+        setTimeout(() => {
+            isLoaded = true;
+        }, 500);
+    });
 
     const recipeCount = data.recipes.length;
     const mealPlanCount = data.mealplans.length;
@@ -26,12 +36,24 @@
         <title>God Middag! 🍽️</title>
       </svelte:head>
 
+<!-- Loading overlay -->
+{#if !isLoaded}
+   <FeatureList className="pointer-events-none"
+title="Go middag! 👋"
+features={[
+    `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
+    "Live prisoversikt på alle ukemenyer / oppskrifter",
+    "Søk etter oppskrifter, ingredienser eller ukemenyer",
+]}
+/>
+    <div class="fixed inset-0 z-50 flex items-center justify-center loading-overlay">
+        <div class="text-2xl font-bold text-gray-600 dark:text-gray-300"><Utensils size="50px"/></div>
+    </div>
+{/if}
 
+
+{#if isLoaded}
 <section class="dark:bg-gray-900 bg-white relative z-10">
-
-
-
-
 
     <InfiniteScroll
     width="100%"
@@ -63,16 +85,17 @@
     </svelte:fragment>
   </InfiniteScroll>
 
-    <FeatureList className="pointer-events-none"
-        title="Go middag! 👋"
-        features={[
-            `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
-            "Live prisoversikt på alle ukemenyer / oppskrifter",
-            "Søk etter oppskrifter, ingredienser eller ukemenyer",
-        ]}
-    />
+  <FeatureList className="pointer-events-none"
+  title="Go middag! 👋"
+  features={[
+      `${mealPlanCount} Ukemenyer og ${recipeCount} oppskrifter! Flere kommer`,
+      "Live prisoversikt på alle ukemenyer / oppskrifter",
+      "Søk etter oppskrifter, ingredienser eller ukemenyer",
+  ]}
+/>
 
 </section>
+{/if}
 
 <style>
     .truncate-subtitle {
@@ -80,17 +103,6 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         max-width: 100%;
-    }
-
-    /* Aurora background styling */
-    :global(.aurora-container) {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 1;
-        background: transparent;
     }
 
     section {
@@ -101,3 +113,4 @@
     }
 
 </style>
+
