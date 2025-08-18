@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { dev } from '$app/environment';
+    import { debugLog } from '$lib/util/logger';
     import { Table, TableBody, TableBodyRow, TableBodyCell, TableHead, TableHeadCell } from "flowbite-svelte";
     import { formatAmount } from "$lib/util/formatAmount.js";
     import { calculateIngredientPrice, getPackageSize, getIngredientDensity } from "$lib/util/conversions";
@@ -24,9 +24,7 @@
     $: ingredientPrices = recipeIngredients.map(ingredient => {
         const price = calculateIngredientPriceAccurate(ingredient);
 
-        if (dev) {
-            console.log(`DEBUG: ${ingredient.name} - count: ${count}, amount: ${ingredient.amount}, price: ${price}`);
-        }
+        debugLog(`DEBUG: ${ingredient.name} - count: ${count}, amount: ${ingredient.amount}, price: ${price}`);
 
         return {
             ingredient,
@@ -75,9 +73,7 @@
         const scalingFactor = count / basePortions;
         const scaledAmount = recipeIngredient.amount * scalingFactor;
 
-        if (dev) {
-            console.log(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, basePortions: ${basePortions}, scalingFactor: ${scalingFactor}, scaledAmount: ${scaledAmount}`);
-        }
+        debugLog(`DEBUG CALC: ${recipeIngredient.name} - amount: ${recipeIngredient.amount}, count: ${count}, basePortions: ${basePortions}, scalingFactor: ${scalingFactor}, scaledAmount: ${scaledAmount}`);
 
         // Use the conversion function for accurate pricing
         return calculateIngredientPrice(

@@ -1,3 +1,5 @@
+import { debugLog } from '$lib/util/logger';
+
 // Ingredient densities (g/ml for liquids, g/cm³ for solids)
 const INGREDIENT_DENSITIES: Record<string, number> = {
   // Liquids
@@ -159,7 +161,7 @@ export function convertToGrams(amount: number, measurement: string, ingredientNa
   }
 
   // Unknown unit - return amount as-is (assume grams)
-  console.warn(`Unknown measurement unit: ${measurement} for ${ingredientName}`);
+  debugLog(`Unknown measurement unit: ${measurement} for ${ingredientName}`);
   return amount;
 }
 

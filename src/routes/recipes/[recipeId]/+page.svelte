@@ -1,5 +1,6 @@
 <script>
     // @ts-nocheck
+    import { debugLog } from '$lib/util/logger';
     import {
         PlusCircle,
         MinusCircle,
@@ -111,7 +112,7 @@
     const goToMealPlan = () => {
         goto(`/plans/${data.recipe.mealPlanId}`);
     };
-    console.log(data, "HAHAH")
+
 
 </script>
 
