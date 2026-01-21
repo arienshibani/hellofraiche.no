@@ -51,9 +51,12 @@
     // Function to find Meny product for an ingredient
     function findMenyProduct(ingredientName: string) {
         const ingredient = ingredients.find(ing => ing.name === ingredientName);
-        if (!ingredient || !ingredient.data || !ingredient.data.products) return null;
+        if (!ingredient || !ingredient.data) return null;
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!products) return null;
         // Find Meny product
-        return ingredient.data.products.find(product =>
+        return products.find(product =>
             product.store && product.store.name === 'Meny'
         ) || null;
     }

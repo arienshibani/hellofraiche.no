@@ -155,8 +155,23 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="click-spark-container"
+  role="button"
+  tabindex="0"
   on:mousedown={handleClick}
   on:pointerdown={handleClick}
+  on:keydown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Create a synthetic MouseEvent for keyboard events
+      const syntheticEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 0,
+        clientY: 0
+      });
+      handleClick(syntheticEvent);
+    }
+  }}
 >
   <canvas
     bind:this={canvas}

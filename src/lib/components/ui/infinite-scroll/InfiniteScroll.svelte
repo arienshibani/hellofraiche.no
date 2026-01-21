@@ -19,7 +19,7 @@
   let wrapperRef: HTMLDivElement;
   let containerRef: HTMLDivElement;
   let observer: any;
-  let rafId: number;
+  let rafId: number | undefined;
   let isHovering = false;
 
   const getTiltTransform = () => {
@@ -29,11 +29,16 @@
       : "rotateX(20deg) rotateZ(20deg) skewX(-20deg)";
   };
 
-  onMount(async () => {
+  onMount(() => {
     if (!containerRef || items.length === 0) return;
+    
+    let cleanup: (() => void) | undefined;
+    
+    (async () => {
 
     const { gsap } = await import('gsap');
-    const { default: Observer } = await import('gsap/Observer.js');
+    const ObserverModule = await import('gsap/Observer.js');
+    const Observer = ObserverModule.default as any;
     gsap.registerPlugin(Observer);
 
     const divItems = gsap.utils.toArray(containerRef.children) as HTMLElement[];
@@ -58,13 +63,13 @@
         target: containerRef,
         type: "wheel,touch,pointer",
         preventDefault: true,
-        onPress: ({ target }) => {
-          (target as HTMLElement).style.cursor = "grabbing";
+        onPress: ({ target }: { target: HTMLElement }) => {
+          target.style.cursor = "grabbing";
         },
-        onRelease: ({ target }) => {
-          (target as HTMLElement).style.cursor = "grab";
+        onRelease: ({ target }: { target: HTMLElement }) => {
+          target.style.cursor = "grab";
         },
-        onChange: ({ deltaY, isDragging, event }) => {
+        onChange: ({ deltaY, isDragging, event }: { deltaY: number; isDragging: boolean; event: Event }) => {
           const d = event.type === "wheel" ? -deltaY : deltaY;
           const distance = isDragging ? d * 5 : d * 10;
           divItems.forEach((child) => {
@@ -117,6 +122,7 @@
 
         return () => {
           if (observer) observer.kill();
+          if (rafId !== undefined) cancelAnimationFrame(rafId);
           divItems.forEach((item) => {
             item.removeEventListener("mouseenter", handleMouseEnter);
             item.removeEventListener("mouseleave", handleMouseLeave);
@@ -124,6 +130,16 @@
         };
       }
     }
+
+      cleanup = () => {
+        if (observer) observer.kill();
+        if (rafId !== undefined) cancelAnimationFrame(rafId);
+      };
+    })();
+
+    return () => {
+      if (cleanup) cleanup();
+    };
   });
 
   onDestroy(() => {

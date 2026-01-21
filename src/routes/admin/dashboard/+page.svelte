@@ -1,24 +1,32 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
+  import { goto } from '$app/navigation';
   import { Tabs, TabItem } from 'flowbite-svelte';
   import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
-
-  onMount(() => {
-    // Simulate a small delay to show loading state, then hide it
-    setTimeout(() => {
-      isLoading = false;
-    }, 500);
-  });
   import RecipesTable from '$lib/components/ui/RecipesTable.svelte';
   import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
   import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
-  import { validateEAN } from '$lib/util/validateEAN.js';
-  export let data;
-  let recipes = data.recipes;
-  let allIngredients = data.ingredients || [];
-  let isLoading = true;
+  import RecipeEditor from '$lib/components/ui/RecipeEditor.svelte';
+  import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
+  import { validateEAN } from '$lib/util/validateEAN';
+  import type { Recipe, IngredientWithPrice } from '$lib/types';
+
+  export let data: { recipes: Recipe[]; ingredients: IngredientWithPrice[] };
+  
+  // Initialize with safe defaults
+  let recipes: Recipe[] = [];
+  let allIngredients: IngredientWithPrice[] = [];
+  let isLoading = false; // Data is loaded server-side, no need for loading state
+
+  // Initialize data safely
+  $: {
+    if (data) {
+      recipes = data.recipes || [];
+      allIngredients = data.ingredients || [];
+    }
+  }
 
   // Search functionality
   let recipeSearchTerm = '';
@@ -26,14 +34,14 @@
 
   // Filtered results
   $: filteredRecipes = recipes.filter(recipe => 
-    recipe.title?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
-    recipe.subtitle?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
-    recipe.mealPlanId?.toLowerCase().includes(recipeSearchTerm.toLowerCase())
+    recipe?.title?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe?.subtitle?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe?.mealPlanId?.toLowerCase().includes(recipeSearchTerm.toLowerCase())
   );
 
   $: filteredIngredients = allIngredients.filter(ingredient => 
-    ingredient.name?.toLowerCase().includes(ingredientSearchTerm.toLowerCase()) ||
-    ingredient.ean?.includes(ingredientSearchTerm)
+    ingredient?.name?.toLowerCase().includes(ingredientSearchTerm.toLowerCase()) ||
+    ingredient?.ean?.includes(ingredientSearchTerm)
   );
 
   // Clear search functions
@@ -47,15 +55,15 @@
 
 
   let showModal = false;
-  // @ts-ignore
-  let editingRecipe = null;
+  let editingRecipe: Recipe | null = null;
   let jsonString = '';
   let error = '';
   let isCreating = false;
   let showRawJson = false;
+  let useVisualEditor = true; // Default to visual editor
 
   // Form state for new recipe
-  let formRecipe = {
+  let formRecipe: Partial<Recipe> & { steps: string[]; recipeIngredients: any[] } = {
     title: '',
     subtitle: '',
     prepTime: 0,
@@ -81,7 +89,7 @@
   // Ingredient modal state
   let showIngredientModal = false;
   let isEditingIngredient = false;
-  let editingIngredient = null;
+  let editingIngredient: IngredientWithPrice | null = null;
   let ingredientForm = { name: '', ean: '' };
   let ingredientError = '';
 
@@ -89,16 +97,17 @@
 
   // Deletion modal state
   let showDeleteModal = false;
-  let deleteTarget = null;
-  let deleteType = '';
+  let deleteTarget: Recipe | IngredientWithPrice | null = null;
+  let deleteType: 'recipe' | 'ingredient' = 'recipe';
   let deleteMessage = '';
 
-  function openModal(recipe) {
+  function openModal(recipe: Recipe) {
     editingRecipe = recipe;
     jsonString = JSON.stringify(recipe, null, 2);
     error = '';
     showModal = true;
     isCreating = false;
+    useVisualEditor = true; // Default to visual editor
   }
 
   function openCreateModal() {
@@ -122,6 +131,7 @@
     showModal = true;
     isCreating = true;
     showRawJson = false;
+    useVisualEditor = true; // Default to visual editor
     jsonString = JSON.stringify(formRecipe, null, 2);
   }
 
@@ -139,7 +149,7 @@
       newStep = '';
     }
   }
-  function removeStep(idx) {
+  function removeStep(idx: number) {
     formRecipe.steps = formRecipe.steps.filter((_, i) => i !== idx);
   }
 
@@ -150,8 +160,7 @@
         formRecipe.recipeIngredients = [
           ...formRecipe.recipeIngredients,
           {
-            ...ingredientObj,
-            name: ingredientObj.name, // for clarity
+            name: ingredientObj.name,
             amount: newIngredient.amount,
             measurement: newIngredient.measurement
           }
@@ -164,7 +173,7 @@
     }
   }
 
-  function selectIngredient(ingredient) {
+  function selectIngredient(ingredient: IngredientWithPrice) {
     selectedIngredientId = ingredient._id;
     dropdownIngredientSearch = ingredient.name;
     showIngredientDropdown = false;
@@ -183,8 +192,12 @@
     showIngredientDropdown = false;
   }
 
-  function removeIngredient(idx) {
+  function removeIngredient(idx: number) {
     formRecipe.recipeIngredients = formRecipe.recipeIngredients.filter((_, i) => i !== idx);
+  }
+
+  function getIngredientDisplay(ing: any): string {
+    return `${ing?.name || ''} (${ing?.amount || 0} ${ing?.measurement || ''})`;
   }
 
   function toggleInputMode() {
@@ -202,6 +215,24 @@
       jsonString = JSON.stringify(formRecipe, null, 2);
     }
     showRawJson = !showRawJson;
+  }
+
+  function toggleEditorMode() {
+    useVisualEditor = !useVisualEditor;
+    if (!useVisualEditor) {
+      // Switching to JSON: update jsonString from editingRecipe
+      jsonString = JSON.stringify(editingRecipe, null, 2);
+    }
+  }
+
+  function handleRecipeEditorSave(event: { detail: Recipe }) {
+    editingRecipe = event.detail;
+    jsonString = JSON.stringify(event.detail, null, 2);
+    save();
+  }
+
+  function handleRecipeEditorCancel() {
+    closeModal();
   }
 
   async function save() {
@@ -238,12 +269,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updated)
         });
-        if (res.ok) {
+        if (res.ok && editingRecipe) {
+          const recipeId = editingRecipe._id;
           toast.success(`Oppdatert oppskrift: ${updated.title || editingRecipe.title || 'Untitled Recipe'}`);
-          // @ts-ignore
           recipes = recipes.map(r =>
-            // @ts-ignore
-            r._id === editingRecipe._id ? { ...r, ...updated, _id: editingRecipe._id } : r
+            r._id === recipeId ? { ...updated, _id: recipeId } : r
           );
           closeModal();
         } else {
@@ -285,7 +315,13 @@
   }
 
   // Close modal on Escape key
-  function handleKeydown(event) {
+  function handleKeydown(event: KeyboardEvent) {
+    // Don't interfere with input/textarea elements
+    const target = event.target as HTMLElement;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      return; // Let input/textarea handle their own events
+    }
+
     if (showModal && event.key === 'Escape') {
       closeModal();
     }
@@ -293,17 +329,20 @@
     // Search shortcuts: Ctrl+F for recipe search, Ctrl+Shift+F for ingredient search
     if (event.ctrlKey && event.key === 'f' && !event.shiftKey) {
       event.preventDefault();
-      document.querySelector('input[placeholder*="oppskrifter"]')?.focus();
+      const input = document.querySelector('input[placeholder*="oppskrifter"]') as HTMLInputElement;
+      input?.focus();
     }
     if (event.ctrlKey && event.shiftKey && event.key === 'F') {
       event.preventDefault();
-      document.querySelector('input[placeholder*="ingredienser"]')?.focus();
+      const input = document.querySelector('input[placeholder*="ingredienser"]') as HTMLInputElement;
+      input?.focus();
     }
   }
 
   // Close dropdown when clicking outside
-  function handleClickOutside(event) {
-    if (showIngredientDropdown && !event.target.closest('.ingredient-dropdown')) {
+  function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (showIngredientDropdown && !target.closest('.ingredient-dropdown')) {
       showIngredientDropdown = false;
     }
   }
@@ -317,7 +356,7 @@
     };
   });
 
-  function openEditIngredient(ingredient) {
+  function openEditIngredient(ingredient: IngredientWithPrice) {
     isEditingIngredient = true;
     editingIngredient = ingredient;
     ingredientForm = { name: ingredient.name, ean: ingredient.ean || '' };
@@ -347,7 +386,7 @@
       return;
     }
     let res;
-    if (isEditingIngredient) {
+    if (isEditingIngredient && editingIngredient) {
       res = await fetch('/admin/dashboard/api/ingredients', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -361,9 +400,10 @@
       });
     }
     if (res.ok) {
-      if (isEditingIngredient) {
+      if (isEditingIngredient && editingIngredient) {
+        const editingId = editingIngredient._id;
         allIngredients = allIngredients.map(ing =>
-          ing._id === editingIngredient._id ? { ...ing, ...ingredientForm } : ing
+          ing._id === editingId ? { ...ing, ...ingredientForm } : ing
         );
         toast.success('Ingrediens oppdatert!');
       } else {
@@ -380,7 +420,7 @@
     }
   }
 
-  async function deleteIngredient(ingredient) {
+  async function deleteIngredient(ingredient: IngredientWithPrice) {
     if (!confirm(`Er du sikker på at du vil slette ingrediensen "${ingredient.name}"?`)) return;
     const res = await fetch('/admin/dashboard/api/ingredients', {
       method: 'DELETE',
@@ -395,36 +435,40 @@
     }
   }
 
-  function openDeleteModal(target, type) {
+  function openDeleteModal(target: Recipe | IngredientWithPrice, type: 'recipe' | 'ingredient') {
     deleteTarget = target;
     deleteType = type;
     deleteMessage = type === 'ingredient'
-      ? `Er du sikker på at du vil slette ingrediensen "${target.name}"?`
-      : `Er du sikker på at du vil slette oppskriften "${target.title}"?`;
+      ? `Er du sikker på at du vil slette ingrediensen "${(target as IngredientWithPrice).name}"?`
+      : `Er du sikker på at du vil slette oppskriften "${(target as Recipe).title}"?`;
     showDeleteModal = true;
   }
   function closeDeleteModal() {
     showDeleteModal = false;
     deleteTarget = null;
-    deleteType = '';
+    deleteType = 'recipe';
     deleteMessage = '';
   }
   async function confirmDelete() {
+    if (!deleteTarget) return;
+    
     if (deleteType === 'ingredient') {
+      const target = deleteTarget as IngredientWithPrice;
       const res = await fetch('/admin/dashboard/api/ingredients', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: deleteTarget._id })
+        body: JSON.stringify({ _id: target._id })
       });
       if (res.ok) {
-        allIngredients = allIngredients.filter(ing => ing._id !== deleteTarget._id);
+        allIngredients = allIngredients.filter(ing => ing._id !== target._id);
         toast.success('Ingrediens slettet!');
       } else {
         toast.error('Kunne ikke slette ingrediens');
       }
     } else if (deleteType === 'recipe') {
-      let id = deleteTarget._id;
-      if (typeof id === 'object' && id.$oid) id = id.$oid;
+      const target = deleteTarget as Recipe;
+      let id: string = target._id || '';
+      if (typeof id === 'object' && (id as any).$oid) id = (id as any).$oid;
       const res = await fetch(`/admin/dashboard/api/recipes/${id}`, {
         method: 'DELETE'
       });
@@ -440,7 +484,7 @@
 
 
 
-  function saveIngredientFromCard({ name, ean, done }) {
+  function saveIngredientFromCard({ name, ean, done }: { name: string; ean: string; done?: () => void }) {
     // Reuse saveIngredient logic, but allow passing name/ean and optionally skip closing modal
     ingredientForm = { name, ean };
     ingredientError = '';
@@ -449,9 +493,20 @@
     showIngredientModal = true;
     // Optionally, you can handle 'done' callback if needed
   }
+
+  function getIngredientName(ingredient: IngredientWithPrice): string {
+    return ingredient.name;
+  }
 </script>
 
   <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
+    <div class="mb-4 pt-8">
+      <Breadcrumb 
+        items={[
+          { label: 'Admin', href: '/admin/dashboard' }
+        ]} 
+      />
+    </div>
     <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
       <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
     </div>
@@ -472,7 +527,7 @@
             <div class="flex items-center mb-4 justify-between flex-row-reverse">
               <button
                 class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
-                on:click={openCreateModal}
+                on:click={() => goto('/admin/dashboard/recipes/new')}
                 aria-label="Add new recipe"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
@@ -517,7 +572,16 @@
               recipes={filteredRecipes}
               {allIngredients}
               showAdminActions={true}
-              on:edit={(event) => openModal(event.detail)}
+              on:edit={(event) => {
+                const recipe = event.detail;
+                // Navigate to dedicated edit page using _id or title
+                if (recipe._id) {
+                  goto(`/admin/dashboard/recipes/${recipe._id}`);
+                } else if (recipe.title) {
+                  // Fallback: try to find by title if _id is not available
+                  goto(`/admin/dashboard/recipes/${encodeURIComponent(recipe.title)}`);
+                }
+              }}
               on:delete={(event) => openDeleteModal(event.detail, 'recipe')}
               on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
               on:refresh={async () => {
@@ -578,7 +642,7 @@
               💡 Søk etter navn eller EAN-nummer • Ctrl+Shift+F for hurtigsøk
             </div>
 
-            <IngredientsAlert {allIngredients} />
+            <IngredientsAlert ingredients={allIngredients} />
 
 
             <div class="mb-4 p-3 max-w-xl bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-400 rounded text-blue-900 dark:text-blue-100 text-sm">
@@ -599,8 +663,8 @@
   </div>
 
 {#if showModal}
-  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative">
+  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto py-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-6xl relative my-auto">
       <h3 class="text-xl font-bold mb-4">{isCreating ? 'Legg til ny oppskrift' : 'Rediger oppskrift'}</h3>
       {#if isCreating}
         <div class="flex justify-end mb-2">
@@ -618,32 +682,32 @@
             <input class="hidden" type="text" value={formRecipe.recipeId} readonly />
             <div class="flex gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium mb-1">Tittel</label>
-                <input class="w-full border rounded p-2" bind:value={formRecipe.title} required />
+                <label for="recipe-title" class="block text-sm font-medium mb-1">Tittel</label>
+                <input id="recipe-title" class="w-full border rounded p-2" bind:value={formRecipe.title} required />
               </div>
               <div class="flex-1">
-                <label class="block text-sm font-medium mb-1">Undertittel</label>
-                <input class="w-full border rounded p-2" bind:value={formRecipe.subtitle} />
+                <label for="recipe-subtitle" class="block text-sm font-medium mb-1">Undertittel</label>
+                <input id="recipe-subtitle" class="w-full border rounded p-2" bind:value={formRecipe.subtitle} />
               </div>
             </div>
             <div class="flex gap-4">
               <div class="flex-1">
-                <label class="block text-sm font-medium mb-1">Forberedelsestid (min)</label>
-                <input class="w-full border rounded p-2" type="number" bind:value={formRecipe.prepTime} min="0" />
+                <label for="recipe-prep-time" class="block text-sm font-medium mb-1">Forberedelsestid (min)</label>
+                <input id="recipe-prep-time" class="w-full border rounded p-2" type="number" bind:value={formRecipe.prepTime} min="0" />
               </div>
               <div class="flex-1">
-                <label class="block text-sm font-medium mb-1">Porsjoner</label>
-                <input class="w-full border rounded p-2" type="number" bind:value={formRecipe.portions} min="0" />
+                <label for="recipe-portions" class="block text-sm font-medium mb-1">Porsjoner</label>
+                <input id="recipe-portions" class="w-full border rounded p-2" type="number" bind:value={formRecipe.portions} min="0" />
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Meal Plan ID</label>
-              <input class="w-full border rounded p-2" bind:value={formRecipe.mealPlanId} />
+              <label for="recipe-meal-plan-id" class="block text-sm font-medium mb-1">Meal Plan ID</label>
+              <input id="recipe-meal-plan-id" class="w-full border rounded p-2" bind:value={formRecipe.mealPlanId} />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Steg</label>
+              <label for="recipe-new-step" class="block text-sm font-medium mb-1">Steg</label>
               <div class="flex gap-2 mb-2">
-                <input class="flex-1 border rounded p-2" placeholder="Nytt steg" bind:value={newStep} />
+                <input id="recipe-new-step" class="flex-1 border rounded p-2" placeholder="Nytt steg" bind:value={newStep} />
                 <button type="button" class="bg-blue-600 text-white px-3 py-1 rounded" on:click={addStep}>Legg til</button>
               </div>
               <ul class="list-decimal ml-6">
@@ -656,7 +720,7 @@
               </ul>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Ingredienser</label>
+              <span class="block text-sm font-medium mb-1">Ingredienser</span>
               <div class="flex gap-2 mb-2">
                 <!-- Custom Searchable Dropdown -->
                 <div class="flex-1 relative ingredient-dropdown">
@@ -741,7 +805,7 @@
               <ul class="ml-6">
                 {#each formRecipe.recipeIngredients as ing, i}
                   <li class="flex items-center gap-2 mb-1">
-                    <span>{ing.name} ({ing.amount} {ing.measurement})</span>
+                    <span>{getIngredientDisplay(ing)}</span>
                     <button type="button" class="text-red-600" on:click={() => removeIngredient(i)}>✕</button>
                   </li>
                 {/each}
@@ -754,14 +818,33 @@
           </form>
         {/if}
       {:else}
-        <textarea class="w-full border rounded p-2 font-mono" rows="18" bind:value={jsonString}></textarea>
-        {#if error}
-          <div class="text-red-600 mt-2">{error}</div>
-        {/if}
-        <div class="flex justify-end gap-2 mt-4">
-          <button class="bg-gray-400 text-white px-4 py-2 rounded" on:click={closeModal}>Cancel</button>
-          <button class="bg-green-600 text-white px-4 py-2 rounded" on:click={save}>Lagre</button>
+        <!-- Editing existing recipe -->
+        <div class="flex justify-end mb-2">
+          <button class="text-blue-600 underline text-sm" type="button" on:click={toggleEditorMode}>
+            {useVisualEditor ? 'JSON Editor' : 'Visual Editor'}
+          </button>
         </div>
+        {#if useVisualEditor && editingRecipe}
+          <div class="max-h-[80vh] overflow-y-auto">
+            <RecipeEditor
+              recipe={editingRecipe}
+              {allIngredients}
+              on:save={handleRecipeEditorSave}
+              on:cancel={handleRecipeEditorCancel}
+            />
+          </div>
+        {:else if useVisualEditor}
+          <p class="text-red-600">Ingen oppskrift valgt</p>
+        {:else}
+          <textarea class="w-full border rounded p-2 font-mono dark:bg-gray-700 dark:text-white" rows="18" bind:value={jsonString}></textarea>
+          {#if error}
+            <div class="text-red-600 mt-2">{error}</div>
+          {/if}
+          <div class="flex justify-end gap-2 mt-4">
+            <button class="bg-gray-400 text-white px-4 py-2 rounded" on:click={closeModal}>Avbryt</button>
+            <button class="bg-green-600 text-white px-4 py-2 rounded" on:click={save}>Lagre</button>
+          </div>
+        {/if}
       {/if}
     </div>
   </div>
@@ -773,12 +856,12 @@
       <h3 class="text-xl font-bold mb-4">{isEditingIngredient ? 'Rediger ingrediens' : 'Ny ingrediens'}</h3>
       <form on:submit|preventDefault={saveIngredient} class="flex flex-col gap-4">
         <div>
-          <label class="block text-sm font-medium mb-1">Navn</label>
-          <input class="w-full border rounded p-2" bind:value={ingredientForm.name} required />
+          <label for="ingredient-name" class="block text-sm font-medium mb-1">Navn</label>
+          <input id="ingredient-name" class="w-full border rounded p-2" bind:value={ingredientForm.name} required />
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">EAN</label>
-          <input class="w-full border rounded p-2" bind:value={ingredientForm.ean} required />
+          <label for="ingredient-ean" class="block text-sm font-medium mb-1">EAN</label>
+          <input id="ingredient-ean" class="w-full border rounded p-2" bind:value={ingredientForm.ean} required />
         </div>
         {#if ingredientError}
           <div class="text-red-600 mt-2">{ingredientError}</div>

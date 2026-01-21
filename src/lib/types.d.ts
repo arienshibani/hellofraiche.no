@@ -15,11 +15,39 @@ export type Dish = {
 };
 
 // Database ingredient with price data from Kassal.app
+// Note: The API response is nested as data.data.products (the outer data is what we store, inner data is the API response)
 export type IngredientWithPrice = {
     _id: string;
     name: string;
     ean: string;
     data?: {
+        // The API response from Kassal.app is nested inside data.data
+        data?: {
+            products?: Array<{
+                store?: {
+                    name: string;
+                };
+                current_price?: {
+                    price: number;
+                };
+                url?: string;
+                weight?: number;
+                weight_unit?: string;
+                nutrition?: Array<{
+                    code: string;
+                    display_name: string;
+                    amount: number;
+                    unit: string;
+                }>;
+            }>;
+            nutrition?: Array<{
+                code: string;
+                display_name: string;
+                amount: number;
+                unit: string;
+            }>;
+        };
+        // Legacy support: some ingredients might have products directly in data.products
         products?: Array<{
             store?: {
                 name: string;
@@ -52,4 +80,50 @@ export type RecipeIngredient = {
     amount: number;
     measurement: string;
     isBulkItem?: boolean;
+};
+
+// Recipe tip type
+export type RecipeTip = {
+    type: "caution" | "info" | "tip";
+    tipText: string;
+    associatedWithStepNr: number;
+};
+
+// Recipe type (matches the actual structure used in the codebase)
+export type Recipe = {
+    _id?: string; // MongoDB document ID
+    title: string; // Title of the recipe
+    subtitle?: string; // Optional subtitle
+    prepTime?: number; // Number of estimated minutes it takes to prepare
+    portions: number; // Portion size for the recipe
+    recipeImage?: string; // Optional image path or URL
+    steps: string[]; // Steps that must be followed for preparation
+    tips?: RecipeTip[]; // Optional tips array
+    recipeIngredients: RecipeIngredient[]; // List of ingredients in the recipe
+    recipeId: string; // Unique identifier for the recipe
+    mealPlanId?: string; // Optional identifier for the meal plan this recipe belongs to
+    utkast?: boolean; // Draft mode - if true, recipe is not shown on public pages (default: true for new recipes)
+    dietaryLabels?: string[]; // Array of dietary labels (e.g., "Vegansk", "Glutenfri", custom labels)
+};
+
+// MealPlan recipe reference (used in mealPlan.recipes array)
+export type MealPlanRecipe = {
+    recipeId: string;
+    title?: string; // Optional, may not be included in projection
+};
+
+// MealPlan type (matches the structure returned from database)
+export type MealPlan = {
+    _id?: string; // MongoDB document ID
+    name: string; // Name of the meal plan
+    recipes: MealPlanRecipe[]; // Array of recipe references
+    mealPlanId?: string; // Optional unique identifier
+    estimatedPrice?: number; // Optional estimated price (added during processing)
+};
+
+// PageData type for recipe detail page
+export type RecipePageData = {
+    recipe: Recipe;
+    mealPlan: MealPlan | null;
+    ingredients: IngredientWithPrice[];
 };

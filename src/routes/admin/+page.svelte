@@ -9,12 +9,12 @@ export let form;
       <div class="mb-4 text-red-600 text-center">{form.error}</div>
     {/if}
     <div class="mb-4">
-      <label class="block mb-1 font-semibold dark:text-white">Brukernavn</label>
-      <input class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" name="username" required />
+      <label for="admin-username" class="block mb-1 font-semibold dark:text-white">Brukernavn</label>
+      <input id="admin-username" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" name="username" required />
     </div>
     <div class="mb-6">
-      <label class="block mb-1 font-semibold dark:text-white">Passord</label>
-      <input class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" type="password" name="password" required />
+      <label for="admin-password" class="block mb-1 font-semibold dark:text-white">Passord</label>
+      <input id="admin-password" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-white" type="password" name="password" required />
     </div>
     <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded dark:bg-green-800 dark:hover:bg-green-900" type="submit">Logg inn</button>
   </form>

@@ -44,7 +44,7 @@
   function closeAddModal() {
     showAddModal = false;
   }
-  function handleAddIngredient({ detail }) {
+  function handleAddIngredient({ detail }: { detail: { name: string; ean: string } }) {
     if (!detail.name || !detail.ean) {
       addError = 'Navn og EAN er påkrevd';
       return;
@@ -69,7 +69,7 @@
 
     // Don't close modal, let parent update allIngredients and thus missingIngredients
   }
-  function handleCoverageAdd({ detail }) {
+  function handleCoverageAdd({ detail }: { detail: { name: string } }) {
     openAddModal(detail.name);
   }
 
@@ -103,7 +103,7 @@
   {#if showAdminActions}
     <div class="flex gap-2 items-center">
       {#if coverage !== undefined}
-        <span class={`text-xs font-semibold ${coverageColor} cursor-pointer`} on:click={openCoverageModal}>{coverage}% Ingredient index</span>
+        <button type="button" class={`text-xs font-semibold ${coverageColor} cursor-pointer bg-transparent border-0 p-0`} on:click={openCoverageModal}>{coverage}% Ingredient index</button>
       {/if}
       <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded dark:bg-blue-900" on:click={() => dispatch('edit', recipe)}>Rediger Oppskrift ✍️</button>
       <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded dark:bg-red-900" on:click={() => dispatch('delete', recipe)}>Slett Oppskrift 🗑️</button>

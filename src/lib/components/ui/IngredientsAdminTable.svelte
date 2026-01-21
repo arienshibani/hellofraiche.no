@@ -10,44 +10,50 @@
 
     // Get the best price from products
     function getBestPrice(ingredient: any) {
-        if (!ingredient.data || !ingredient.data.products || ingredient.data.products.length === 0) {
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!ingredient.data || !products || products.length === 0) {
             return null;
         }
 
         // Find Meny product first, then any other product
-        const menyProduct = ingredient.data.products.find((product: any) =>
+        const menyProduct = products.find((product: any) =>
             product.store && product.store.name === 'Meny'
         );
 
-        const product = menyProduct || ingredient.data.products[0];
+        const product = menyProduct || products[0];
         return product?.current_price?.price || null;
     }
 
     // Get product URL
     function getProductUrl(ingredient: any) {
-        if (!ingredient.data || !ingredient.data.products || ingredient.data.products.length === 0) {
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!ingredient.data || !products || products.length === 0) {
             return null;
         }
 
-        const menyProduct = ingredient.data.products.find((product: any) =>
+        const menyProduct = products.find((product: any) =>
             product.store && product.store.name === 'Meny'
         );
 
-        const product = menyProduct || ingredient.data.products[0];
+        const product = menyProduct || products[0];
         return product?.url || null;
     }
 
     // Get store name
     function getStoreName(ingredient: any) {
-        if (!ingredient.data || !ingredient.data.products || ingredient.data.products.length === 0) {
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!ingredient.data || !products || products.length === 0) {
             return null;
         }
 
-        const menyProduct = ingredient.data.products.find((product: any) =>
+        const menyProduct = products.find((product: any) =>
             product.store && product.store.name === 'Meny'
         );
 
-        const product = menyProduct || ingredient.data.products[0];
+        const product = menyProduct || products[0];
         return product?.store?.name || null;
     }
 </script>

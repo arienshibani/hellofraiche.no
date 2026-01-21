@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
 
-  export let items = [
+  export let items: string[] = [
     'Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5',
     'Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10',
     'Item 11', 'Item 12', 'Item 13', 'Item 14', 'Item 15'
@@ -14,21 +14,22 @@
   export let displayScrollbar = true;
   export let initialSelectedIndex = -1;
 
-  let listRef;
+  let listRef: HTMLDivElement | undefined = undefined;
   let selectedIndex = initialSelectedIndex;
   let keyboardNav = false;
   let topGradientOpacity = 0;
   let bottomGradientOpacity = 1;
   const dispatch = createEventDispatcher();
 
-  function handleScroll(e) {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
+  function handleScroll(e: Event) {
+    const target = e.target as HTMLDivElement;
+    const { scrollTop, scrollHeight, clientHeight } = target;
     topGradientOpacity = Math.min(scrollTop / 50, 1);
     const bottomDistance = scrollHeight - (scrollTop + clientHeight);
     bottomGradientOpacity = scrollHeight <= clientHeight ? 0 : Math.min(bottomDistance / 50, 1);
   }
 
-  function handleKeyDown(e) {
+  function handleKeyDown(e: KeyboardEvent) {
     if (!enableArrowNavigation) return;
     if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
       e.preventDefault();
@@ -58,8 +59,8 @@
   });
 
   $: if (keyboardNav && selectedIndex >= 0 && listRef) {
-    const container = listRef;
-    const selectedItem = container.querySelector(`[data-index="${selectedIndex}"]`);
+    const container: HTMLDivElement = listRef;
+    const selectedItem = container.querySelector(`[data-index="${selectedIndex}"]`) as HTMLElement | null;
     if (selectedItem) {
       const extraMargin = 50;
       const containerScrollTop = container.scrollTop;
