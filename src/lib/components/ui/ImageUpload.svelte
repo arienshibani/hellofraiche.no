@@ -3,7 +3,7 @@
   import { X, Upload, Image as ImageIcon } from 'lucide-svelte';
 
   export let value: string | undefined = undefined; // Base64 image string
-  export let maxSizeMB: number = 2; // Max file size in MB before encoding
+  export let maxSizeMB: number = 3; // Max file size in MB before encoding
 
   const dispatch = createEventDispatcher<{
     change: string | undefined;
@@ -12,16 +12,14 @@
   let fileInput: HTMLInputElement;
   let previewUrl: string | undefined = value;
   let error: string = '';
+  let isDragging = false;
 
   // Update preview when value changes externally
   $: if (value !== previewUrl) {
     previewUrl = value;
   }
 
-  function handleFileSelect(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    
+  function processFile(file: File) {
     if (!file) return;
 
     error = '';
@@ -51,6 +49,35 @@
       error = 'Feil ved lesing av bilde';
     };
     reader.readAsDataURL(file);
+  }
+
+  function handleFileSelect(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    processFile(file);
+  }
+
+  function handleDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    isDragging = true;
+  }
+
+  function handleDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    isDragging = false;
+  }
+
+  function handleDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    isDragging = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
+    }
   }
 
   function removeImage() {
@@ -86,8 +113,11 @@
     </div>
   {:else}
     <div
-      class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+      class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'}"
       on:click={triggerFileInput}
+      on:dragover={handleDragOver}
+      on:dragleave={handleDragLeave}
+      on:drop={handleDrop}
       role="button"
       tabindex="0"
       on:keydown={(e) => {
@@ -99,7 +129,7 @@
     >
       <ImageIcon size={48} class="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
       <p class="text-gray-600 dark:text-gray-400 mb-2">
-        Klikk for å laste opp bilde
+        {isDragging ? 'Slipp bilde her' : 'Klikk eller dra bilde hit for å laste opp'}
       </p>
       <p class="text-sm text-gray-500 dark:text-gray-500">
         Maks størrelse: {maxSizeMB}MB (JPEG, PNG, WebP)
@@ -122,7 +152,7 @@
   {#if previewUrl}
     <button
       type="button"
-      class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+      class="mt-2 flex text-sm text-blue-600 dark:text-blue-400 hover:underline"
       on:click={triggerFileInput}
     >
       Bytt bilde
