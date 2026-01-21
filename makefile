@@ -10,6 +10,10 @@ dev:
 install:
 	pnpm install
 
+# Run the ingredient price scanner to fetch prices from Kassal.app
+price-scan:
+	node scripts/price-scanner.js
+
 # Display available make commands with descriptions
 help:
 	@echo ""
