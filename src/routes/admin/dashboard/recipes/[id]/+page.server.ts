@@ -11,9 +11,27 @@ export type AdminRecipeEditPageData = {
 
 export const load: PageServerLoad = async ({ params }): Promise<AdminRecipeEditPageData> => {
 	const db = await getDatabase();
-	const id = typeof params.id === 'string' && params.id.length === 24 ? new ObjectId(params.id) : params.id;
-	const recipe = await db.collection('recipes').findOne({ _id: id as any }) as unknown as Recipe | null;
+	const id = params.id;
+	
+	let recipe: Recipe | null = null;
+	
+	// Try to find by _id first (if it's a valid ObjectId)
+	if (typeof id === 'string' && id.length === 24) {
+		try {
+			recipe = await db.collection('recipes').findOne({ _id: new ObjectId(id) }) as unknown as Recipe | null;
+		} catch (e) {
+			// Invalid ObjectId, continue to try by title
+		}
+	}
+	
+	// If not found by _id, try to find by title (URL-encoded)
+	if (!recipe && id) {
+		const decodedTitle = decodeURIComponent(id);
+		recipe = await db.collection('recipes').findOne({ title: decodedTitle }) as unknown as Recipe | null;
+	}
+	
 	const ingredients = await db.collection('ingredients').find({}).toArray() as unknown as IngredientWithPrice[];
+	
 	return { 
 		recipe: serializeNonPOJOs(recipe),
 		ingredients: serializeNonPOJOs(ingredients)

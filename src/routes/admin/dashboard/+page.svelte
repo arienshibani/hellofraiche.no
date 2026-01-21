@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
+  import { goto } from '$app/navigation';
   import { Tabs, TabItem } from 'flowbite-svelte';
   import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
   import RecipesTable from '$lib/components/ui/RecipesTable.svelte';
@@ -12,9 +13,19 @@
   import type { Recipe, IngredientWithPrice } from '$lib/types';
 
   export let data: { recipes: Recipe[]; ingredients: IngredientWithPrice[] };
-  let recipes: Recipe[] = data.recipes;
-  let allIngredients: IngredientWithPrice[] = data.ingredients || [];
-  let isLoading = true;
+  
+  // Initialize with safe defaults
+  let recipes: Recipe[] = [];
+  let allIngredients: IngredientWithPrice[] = [];
+  let isLoading = false; // Data is loaded server-side, no need for loading state
+
+  // Initialize data safely
+  $: {
+    if (data) {
+      recipes = data.recipes || [];
+      allIngredients = data.ingredients || [];
+    }
+  }
 
   // Search functionality
   let recipeSearchTerm = '';
@@ -22,14 +33,14 @@
 
   // Filtered results
   $: filteredRecipes = recipes.filter(recipe => 
-    recipe.title?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
-    recipe.subtitle?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
-    recipe.mealPlanId?.toLowerCase().includes(recipeSearchTerm.toLowerCase())
+    recipe?.title?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe?.subtitle?.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+    recipe?.mealPlanId?.toLowerCase().includes(recipeSearchTerm.toLowerCase())
   );
 
   $: filteredIngredients = allIngredients.filter(ingredient => 
-    ingredient.name?.toLowerCase().includes(ingredientSearchTerm.toLowerCase()) ||
-    ingredient.ean?.includes(ingredientSearchTerm)
+    ingredient?.name?.toLowerCase().includes(ingredientSearchTerm.toLowerCase()) ||
+    ingredient?.ean?.includes(ingredientSearchTerm)
   );
 
   // Clear search functions
@@ -304,6 +315,12 @@
 
   // Close modal on Escape key
   function handleKeydown(event: KeyboardEvent) {
+    // Don't interfere with input/textarea elements
+    const target = event.target as HTMLElement;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      return; // Let input/textarea handle their own events
+    }
+
     if (showModal && event.key === 'Escape') {
       closeModal();
     }
@@ -547,7 +564,16 @@
               recipes={filteredRecipes}
               {allIngredients}
               showAdminActions={true}
-              on:edit={(event) => openModal(event.detail)}
+              on:edit={(event) => {
+                const recipe = event.detail;
+                // Navigate to dedicated edit page using _id or title
+                if (recipe._id) {
+                  goto(`/admin/dashboard/recipes/${recipe._id}`);
+                } else if (recipe.title) {
+                  // Fallback: try to find by title if _id is not available
+                  goto(`/admin/dashboard/recipes/${encodeURIComponent(recipe.title)}`);
+                }
+              }}
               on:delete={(event) => openDeleteModal(event.detail, 'recipe')}
               on:addIngredient={({ detail }) => saveIngredientFromCard(detail)}
               on:refresh={async () => {

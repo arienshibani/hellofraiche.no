@@ -27,11 +27,26 @@
     tips: recipe.tips?.map((tip, idx) => ({
       ...tip,
       _tempId: `tip-${idx}-${tip.associatedWithStepNr}`
-    }))
+    })) || []
   };
   let editingStepIndex: number | null = null;
   let editingTipId: string | null = null; // Use unique ID for tip editing
   let editingIngredientIndex: number | null = null;
+  
+  // Reactive map of step numbers to their tips for better reactivity
+  $: tipsByStep = (() => {
+    const map = new Map<number, TipWithTempId[]>();
+    if (editedRecipe.tips && Array.isArray(editedRecipe.tips)) {
+      editedRecipe.tips.forEach((tip: TipWithTempId) => {
+        const stepNr = tip.associatedWithStepNr;
+        if (!map.has(stepNr)) {
+          map.set(stepNr, []);
+        }
+        map.get(stepNr)!.push(tip);
+      });
+    }
+    return map;
+  })();
   let newStepText = '';
   let newTipText = '';
   let newTipType: "caution" | "info" | "tip" = "tip";
@@ -52,9 +67,11 @@
   );
 
   // Helper function to get tips for a specific step
+  // Made reactive by accessing editedRecipe.tips directly
   function getTipsForStep(stepNumber: number): TipWithTempId[] {
-    if (!editedRecipe.tips || !Array.isArray(editedRecipe.tips)) return [];
-    return editedRecipe.tips.filter(tip => tip.associatedWithStepNr === stepNumber) as TipWithTempId[];
+    const tips = editedRecipe.tips;
+    if (!tips || !Array.isArray(tips)) return [];
+    return tips.filter((tip: TipWithTempId) => tip.associatedWithStepNr === stepNumber);
   }
 
   // Helper function to get tip config
@@ -170,25 +187,51 @@
   }
 
   function addTip() {
-    if (newTipText.trim()) {
-      if (!editedRecipe.tips) {
-        editedRecipe.tips = [];
-      }
-      editedRecipe.tips = [...editedRecipe.tips, {
-        type: newTipType,
-        tipText: newTipText.trim(),
-        associatedWithStepNr: newTipStepNr,
-        _tempId: `tip-${Date.now()}`
-      } as TipWithTempId];
-      showAddTipModal = false;
-      newTipText = '';
+    const trimmedText = newTipText.trim();
+    if (!trimmedText) {
+      return; // Don't add empty tips
     }
+    
+    // Create new tip
+    const newTip: TipWithTempId = {
+      type: newTipType,
+      tipText: trimmedText,
+      associatedWithStepNr: newTipStepNr,
+      _tempId: `tip-${Date.now()}`
+    };
+    
+    // Update editedRecipe with new tips array to ensure reactivity
+    // Ensure tips array exists and is properly typed
+    const currentTips: TipWithTempId[] = Array.isArray(editedRecipe.tips) 
+      ? [...editedRecipe.tips] 
+      : [];
+    
+    // Create new tips array with the new tip
+    const updatedTips = [...currentTips, newTip];
+    
+    // Reassign editedRecipe to trigger reactivity - include steps to force re-render
+    editedRecipe = {
+      ...editedRecipe,
+      tips: updatedTips,
+      steps: [...editedRecipe.steps] // Reassign steps array to force each block to re-render
+    };
+    
+    // Close modal and reset form
+    showAddTipModal = false;
+    newTipText = '';
+    newTipType = 'tip';
   }
 
   function deleteTip(tip: TipWithTempId) {
-    if (editedRecipe.tips) {
-      editedRecipe.tips = editedRecipe.tips.filter(t => (t as TipWithTempId)._tempId !== tip._tempId);
-    }
+    if (!editedRecipe.tips || !Array.isArray(editedRecipe.tips)) return;
+    
+    const updatedTips = editedRecipe.tips.filter(t => (t as TipWithTempId)._tempId !== tip._tempId);
+    // Create a completely new object to ensure Svelte detects the change
+    editedRecipe = {
+      ...editedRecipe,
+      tips: updatedTips,
+      steps: [...editedRecipe.steps] // Also reassign steps to force re-render
+    };
   }
 
   function startEditTip(tip: TipWithTempId) {
@@ -199,17 +242,29 @@
   }
 
   function saveTip() {
-    if (editedRecipe.tips && editingTipId && newTipText.trim()) {
-      const tipIndex = editedRecipe.tips.findIndex(t => (t as any)._tempId === editingTipId);
-      if (tipIndex !== -1) {
-        editedRecipe.tips[tipIndex] = {
-          type: newTipType,
-          tipText: newTipText.trim(),
-          associatedWithStepNr: newTipStepNr
-        };
-        editingTipId = null;
-        newTipText = '';
-      }
+    if (!editedRecipe.tips || !Array.isArray(editedRecipe.tips) || !editingTipId || !newTipText.trim()) {
+      return;
+    }
+    
+    const tipIndex = editedRecipe.tips.findIndex(t => (t as TipWithTempId)._tempId === editingTipId);
+    if (tipIndex !== -1) {
+      const updatedTips = [...editedRecipe.tips];
+      updatedTips[tipIndex] = {
+        type: newTipType,
+        tipText: newTipText.trim(),
+        associatedWithStepNr: newTipStepNr,
+        _tempId: editingTipId
+      } as TipWithTempId;
+      
+      // Reassign editedRecipe to trigger reactivity - include steps to force re-render
+      editedRecipe = {
+        ...editedRecipe,
+        tips: updatedTips,
+        steps: [...editedRecipe.steps] // Reassign steps array to force each block to re-render
+      };
+      
+      editingTipId = null;
+      newTipText = '';
     }
   }
 
@@ -497,8 +552,8 @@
     <h2 class="text-2xl font-bold mb-4 dark:text-white">Fremgangsmåte</h2>
     {#each editedRecipe.steps as step, index}
       {@const stepNumber = index + 1}
-      {@const stepTips = getTipsForStep(stepNumber)}
       {@const isEditing = editingStepIndex === index}
+      {@const stepTips = tipsByStep.get(stepNumber) || []}
       
       <div class="mb-6 border-l-4 border-blue-500 pl-4">
         <div class="flex items-start gap-2 mb-2">
@@ -509,10 +564,14 @@
               class="flex-1 px-3 py-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600 min-h-[60px]"
               on:blur={() => saveStep(index, editedRecipe.steps[index])}
               on:keydown={(e) => {
+                // Stop propagation to prevent parent handlers from interfering
+                e.stopPropagation();
                 if (e.key === 'Escape') {
                   editingStepIndex = null;
                 }
               }}
+              on:keyup={(e) => e.stopPropagation()}
+              on:input={(e) => e.stopPropagation()}
             />
           {:else}
             <button
@@ -656,11 +715,15 @@
           placeholder="Skriv inn nytt steg..."
           class="flex-1 px-3 py-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600 min-h-[60px]"
           on:keydown={(e) => {
+            // Stop propagation to prevent parent handlers from interfering
+            e.stopPropagation();
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
               addStep();
             }
           }}
+          on:keyup={(e) => e.stopPropagation()}
+          on:input={(e) => e.stopPropagation()}
         />
         <button
           type="button"
@@ -695,9 +758,28 @@
 
 <!-- Add Tip Modal -->
 {#if showAddTipModal}
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-      <h3 class="text-xl font-bold mb-4 dark:text-white">Legg til tip for steg {newTipStepNr}</h3>
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tip-modal-title"
+  >
+    <!-- Backdrop button for closing modal -->
+    <button
+      type="button"
+      class="absolute inset-0 w-full h-full cursor-default"
+      aria-label="Close modal"
+      on:click={() => showAddTipModal = false}
+      on:keydown={(e) => {
+        if (e.key === 'Escape') {
+          showAddTipModal = false;
+        }
+      }}
+    ></button>
+    <div 
+      class="relative bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl"
+    >
+      <h3 id="tip-modal-title" class="text-xl font-bold mb-4 dark:text-white">Legg til tip for steg {newTipStepNr}</h3>
       <div class="space-y-4">
         <div>
           <label for="tip-type-add" class="block text-sm font-medium dark:text-gray-300 mb-1">Type</label>
@@ -718,21 +800,30 @@
             bind:value={newTipText}
             placeholder="Skriv tip tekst..."
             class="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white min-h-[100px]"
+            on:keydown={(e) => e.stopPropagation()}
+            on:keyup={(e) => e.stopPropagation()}
           />
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-6">
         <button
           type="button"
-          class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded"
-          on:click={() => showAddTipModal = false}
+          class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded transition-colors"
+          on:click={(e) => {
+            e.stopPropagation();
+            showAddTipModal = false;
+            newTipText = '';
+          }}
         >
           Avbryt
         </button>
         <button
           type="button"
-          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
-          on:click={addTip}
+          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+          on:click={(e) => {
+            e.stopPropagation();
+            addTip();
+          }}
         >
           Legg til
         </button>
