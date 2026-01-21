@@ -162,7 +162,14 @@
   on:keydown={(e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleClick(e);
+      // Create a synthetic MouseEvent for keyboard events
+      const syntheticEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 0,
+        clientY: 0
+      });
+      handleClick(syntheticEvent);
     }
   }}
 >

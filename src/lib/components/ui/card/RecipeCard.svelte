@@ -44,7 +44,7 @@
   function closeAddModal() {
     showAddModal = false;
   }
-  function handleAddIngredient({ detail }) {
+  function handleAddIngredient({ detail }: { detail: { name: string; ean: string } }) {
     if (!detail.name || !detail.ean) {
       addError = 'Navn og EAN er påkrevd';
       return;
@@ -69,7 +69,7 @@
 
     // Don't close modal, let parent update allIngredients and thus missingIngredients
   }
-  function handleCoverageAdd({ detail }) {
+  function handleCoverageAdd({ detail }: { detail: { name: string } }) {
     openAddModal(detail.name);
   }
 

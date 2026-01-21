@@ -5,6 +5,9 @@
 
   export let selectedRecipe: any = null;
   export let allIngredients: any[] = [];
+  export let open: boolean = false;
+  export let recipeTitle: string = '';
+  export let missingIngredients: any[] = [];
 
   const dispatch = createEventDispatcher();
 
@@ -26,8 +29,10 @@
     return allIngredients.find((ai: any) => ai.name === ingredientName);
   }
 
-  // Categorize ingredients
-  $: missingIngredients = selectedRecipe?.recipeIngredients
+  // Categorize ingredients - use prop if provided, otherwise derive from selectedRecipe
+  $: computedMissingIngredients = missingIngredients.length > 0 
+    ? missingIngredients 
+    : selectedRecipe?.recipeIngredients
     ? selectedRecipe.recipeIngredients
         .filter((ri: any) => !ri.isBulkItem)
         .map((ri: any) => {
@@ -46,6 +51,9 @@
         .filter((ing: any) => ing !== null)
     : [];
 
+  $: displayTitle = recipeTitle || selectedRecipe?.title || '';
+  $: isOpen = open || selectedRecipe !== null;
+
   // EAN input state
   let eanInputs: Record<string, string> = {};
   let eanErrors: Record<string, string> = {};
@@ -56,7 +64,7 @@
   }
 
   function handleAdd(name: string) {
-    dispatch('addIngredient', { name });
+    dispatch('add', { name });
   }
 
   function handleAddBulk(name: string) {
@@ -147,12 +155,12 @@
   }
 </script>
 
-{#if selectedRecipe}
+{#if isOpen}
   <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
-      <h3 class="text-xl font-bold mb-4 dark:text-white">{selectedRecipe.title}</h3>
+      <h3 class="text-xl font-bold mb-4 dark:text-white">{displayTitle}</h3>
       
-      {#if missingIngredients.length === 0}
+      {#if computedMissingIngredients.length === 0}
         <div class="text-green-600 font-semibold mb-4 dark:text-green-400">
           Alle ingredienser har prisdata! ✓
         </div>
@@ -161,7 +169,7 @@
           Ingredienser som mangler prisdata:
         </div>
         <ul class="mb-4 space-y-3">
-          {#each missingIngredients as ing}
+          {#each computedMissingIngredients as ing}
             <li class="border border-gray-200 dark:border-gray-700 rounded p-3">
               <div class="flex items-start justify-between gap-4 mb-2">
                 <div class="flex-1">

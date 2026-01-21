@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import "../app.css";
   import {
     Navbar,
@@ -61,7 +61,7 @@
   }
 
   // Handler to delay navigation for ClickSpark animation
-  function delayedNav(event, href, toggle) {
+  function delayedNav(event: Event, href: string, toggle?: () => void) {
     event.preventDefault();
     if (isSmallScreen() && toggle) toggle(); // Only collapse on small screens
     setTimeout(() => goto(href), 300);

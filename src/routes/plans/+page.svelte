@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { Card } from "flowbite-svelte";
   import { Calendar } from "lucide-svelte";
 
@@ -40,7 +40,7 @@
   ];
 
   // Get color for a meal plan based on its index
-  const getColorForMealPlan = (index) => {
+  const getColorForMealPlan = (index: number) => {
     return soothingColors[index % soothingColors.length];
   };
 </script>

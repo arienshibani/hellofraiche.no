@@ -10,7 +10,10 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	if (typeof id !== 'string') id = String(id);
 	console.log(`Deleting recipe with ID: ${id}`);
 	try {
-		const result = await db.collection('recipes').deleteOne({ _id: id.length === 24 ? new ObjectId(id) : id });
+		const query = id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id)
+			? { _id: new ObjectId(id) }
+			: { _id: id as any };
+		const result = await db.collection('recipes').deleteOne(query);
 		if (result.deletedCount === 1) {
 			return new Response(JSON.stringify({ success: true }), { status: 200 });
 		} else {

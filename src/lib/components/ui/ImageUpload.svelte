@@ -54,7 +54,9 @@
   function handleFileSelect(event: Event) {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    processFile(file);
+    if (file) {
+      processFile(file);
+    }
   }
 
   function handleDragOver(event: DragEvent) {

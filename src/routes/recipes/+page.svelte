@@ -261,7 +261,7 @@
       >
         <!-- Dietary Labels Filter -->
     <div class="mb-4">
-      <label class="block text-sm font-medium dark:text-gray-300 mb-2">Kostholdsmerker</label>
+      <h3 class="block text-sm font-medium dark:text-gray-300 mb-2">Kostholdsmerker</h3>
       <div class="flex flex-wrap gap-2">
         {#each allAvailableLabels as label}
           {@const config = getLabelConfig(label)}
@@ -286,7 +286,7 @@
 
     <!-- Prep Time Filter -->
     <div class="mb-4">
-      <label class="block text-sm font-medium dark:text-gray-300 mb-2">Forberedelsestid</label>
+      <h3 class="block text-sm font-medium dark:text-gray-300 mb-2">Forberedelsestid</h3>
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
@@ -312,7 +312,7 @@
 
     <!-- Sort Options -->
     <div>
-      <label class="block text-sm font-medium dark:text-gray-300 mb-2">Sorter</label>
+      <h3 class="block text-sm font-medium dark:text-gray-300 mb-2">Sorter</h3>
       <div class="flex flex-wrap gap-2">
         <button
           type="button"
