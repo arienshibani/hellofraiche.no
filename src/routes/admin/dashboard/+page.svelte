@@ -14,7 +14,7 @@
   import RecipesTable from '$lib/components/ui/RecipesTable.svelte';
   import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
   import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
-  import { validateEAN } from '$lib/util/validateEAN.js';
+  import { validateEAN } from '$lib/util/validateEAN';
   export let data;
   let recipes = data.recipes;
   let allIngredients = data.ingredients || [];

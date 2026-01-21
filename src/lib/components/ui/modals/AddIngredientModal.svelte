@@ -4,7 +4,7 @@
   export let error: string = '';
   export let open: boolean = false;
   import { createEventDispatcher } from 'svelte';
-  import { validateEAN } from '$lib/util/validateEAN.js';
+  import { validateEAN } from '$lib/util/validateEAN';
   const dispatch = createEventDispatcher();
 
   let localEAN = ean;
