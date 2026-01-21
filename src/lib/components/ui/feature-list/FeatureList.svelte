@@ -4,21 +4,28 @@
   export let className: string = "";
 </script>
 
-<div class="flex flex-col items-center justify-center w-full p-4 fixed mt-20 {className}">
+<div class="flex flex-col items-center justify-center w-full p-4 {className}">
   {#if title}
-    <div class="text-4xl md:text-6xl font-bold text-center mb-8">
-
+    <div class="text-center mb-12 max-w-3xl mx-auto">
+      <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+        <span class="bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-400 dark:to-green-400 bg-clip-text text-transparent">
+          Stedet for digg, enkel og smart middagsplanlegging
+        </span>
+      </h1>
+      <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-medium">
+        Haugevis av oppskrifter og ukemenyer med <span class="font-bold "> prisoversikt</span>
+      </p>
     </div>
   {/if}
 
-  <div class="dark:text-gray-200 ">
-    <div class="flex items-start justify-center">
-      <div class=" w-[400px]rounded-xl flex flex-col items-start p-5 m-10">
-        <div class="space-y-4">
+  <div class="dark:text-gray-200 w-full">
+    <div class="flex items-center justify-center">
+      <div class="max-w-3xl w-full flex flex-col items-center px-4 sm:px-6 lg:px-8">
+        <ul class="space-y-4 w-full">
           {#each features as feature}
-            <div class="flex items-start space-x-3">
+            <li class="flex items-start space-x-3">
               <svg
-                class="w-6 h-6 text-green-500"
+                class="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -31,10 +38,10 @@
                   d="M5 13l4 4L19 7"
                 ></path>
               </svg>
-              <span class="">{feature}</span>
-            </div>
+              <span class="flex-1 text-gray-800 dark:text-gray-200 text-base sm:text-lg font-normal leading-7 break-words hyphens-auto">{feature}</span>
+            </li>
           {/each}
-        </div>
+        </ul>
       </div>
     </div>
   </div>

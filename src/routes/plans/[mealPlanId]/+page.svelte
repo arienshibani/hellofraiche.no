@@ -6,7 +6,6 @@
     } from "svelte-heros-v2";
     import { goto } from "$app/navigation";
     import { formatAmount } from "$lib/util/formatAmount.js";
-    import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
 
     import { Card, Listgroup, Checkbox } from "flowbite-svelte";
 
@@ -14,14 +13,6 @@
     $: ({ mealPlan, nextMealPlanId, previousMealPlanId } = data);
     export let data;
     
-    $: breadcrumbItems = mealPlan ? [
-        { label: 'Hjem', href: '/' },
-        { label: 'Måltidsplaner', href: '/plans' },
-        { label: mealPlan.name }
-    ] : [
-        { label: 'Hjem', href: '/' },
-        { label: 'Måltidsplaner', href: '/plans' }
-    ];
 
 
     let count = 1;
@@ -64,9 +55,6 @@
 
 
 <div class="dark:text-gray-200 dark:bg-gray-900">
-  <div class="mb-4 pt-8 px-10">
-    <Breadcrumb items={breadcrumbItems} />
-  </div>
 
 <div class="grid mainContent gap-x-40 p-10">
     <Card class="h-max justify-self-end border-none shadow-none dark:bg-gray-800">

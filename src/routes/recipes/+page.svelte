@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Card } from "flowbite-svelte";
   import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { CookingPot, DollarSign, ArrowUp, ArrowDown, Clock, X, Filter, ChevronDown } from "lucide-svelte";
+  import { CookingPot, PiggyBank, ArrowUp, ArrowDown, Clock, X, Filter, ChevronDown, Users } from "lucide-svelte";
   import { getLabelConfig, getLabelColorClasses, PREDEFINED_DIETARY_LABELS } from '$lib/util/dietaryLabels';
   import type { Recipe } from '$lib/types';
 
@@ -27,42 +28,94 @@
   
   // Filter state
   let selectedDietaryLabels: string[] = [];
-  let maxPrepTime: number | null = null; // null = no filter, number = max minutes
-  let filtersOpen = false; // Filter panel is closed by default
+  let maxPrepTime: number | null = null;
+  let filtersOpen = false;
   
   // Sorting state
   let sortBy: 'none' | 'price-asc' | 'price-desc' | 'prepTime-asc' | 'prepTime-desc' | 'title-asc' = 'none';
 
-  // Initialize search from URL once on mount
-  onMount(() => {
+  let lastSyncedURL = '';
+
+  // Sync state from URL (only when URL changes externally, like back button)
+  function syncStateFromURL() {
+    const currentURL = $page.url.search;
+    if (currentURL === lastSyncedURL) return; // URL hasn't changed
+    
+    lastSyncedURL = currentURL;
     search = $page.url.searchParams.get('search') || '';
     const labelsParam = $page.url.searchParams.get('labels');
-    if (labelsParam) {
-      selectedDietaryLabels = labelsParam.split(',').filter(Boolean);
-    }
+    selectedDietaryLabels = labelsParam ? labelsParam.split(',').filter(Boolean) : [];
     const prepTimeParam = $page.url.searchParams.get('prepTime');
-    if (prepTimeParam) {
-      maxPrepTime = parseInt(prepTimeParam, 10);
-    }
+    maxPrepTime = prepTimeParam ? parseInt(prepTimeParam, 10) : null;
+    const sortParam = $page.url.searchParams.get('sort');
+    const validSorts: Array<'none' | 'price-asc' | 'price-desc' | 'prepTime-asc' | 'prepTime-desc' | 'title-asc'> = ['none', 'price-asc', 'price-desc', 'prepTime-asc', 'prepTime-desc', 'title-asc'];
+    sortBy = (sortParam && validSorts.includes(sortParam as any)) ? (sortParam as typeof sortBy) : 'none';
+  }
+
+  // Sync state from URL when page URL changes (handles back/forward navigation)
+  $: {
+    syncStateFromURL();
+  }
+
+  // Initialize on mount
+  onMount(() => {
+    lastSyncedURL = $page.url.search;
+    syncStateFromURL();
   });
 
-  // Update browser URL without navigation on filter changes
-  $: if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
+  // Update URL when state changes
+  function updateURL() {
+    const params = new URLSearchParams();
     if (search) params.set('search', search);
-    else params.delete('search');
     if (selectedDietaryLabels.length > 0) {
       params.set('labels', selectedDietaryLabels.join(','));
-    } else {
-      params.delete('labels');
     }
     if (maxPrepTime !== null) {
       params.set('prepTime', maxPrepTime.toString());
-    } else {
-      params.delete('prepTime');
     }
-    const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
-    history.replaceState(null, '', newUrl);
+    if (sortBy !== 'none') {
+      params.set('sort', sortBy);
+    }
+    const queryString = params.toString();
+    const newUrl = $page.url.pathname + (queryString ? `?${queryString}` : '');
+    const newSearch = queryString ? `?${queryString}` : '';
+    
+    // Update lastSyncedURL before navigation to prevent sync
+    lastSyncedURL = newSearch;
+    
+    goto(newUrl, { 
+      invalidateAll: false, 
+      noScroll: true,
+      keepFocus: true,
+      replaceState: true
+    });
+  }
+
+  // Update URL when state changes (debounced to avoid too many updates)
+  let updateTimeout: ReturnType<typeof setTimeout>;
+  $: {
+    if (typeof window !== 'undefined') {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        // Only update if URL would be different
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        if (selectedDietaryLabels.length > 0) {
+          params.set('labels', selectedDietaryLabels.join(','));
+        }
+        if (maxPrepTime !== null) {
+          params.set('prepTime', maxPrepTime.toString());
+        }
+        if (sortBy !== 'none') {
+          params.set('sort', sortBy);
+        }
+        const queryString = params.toString();
+        const expectedURL = queryString ? `?${queryString}` : '';
+        if (expectedURL !== lastSyncedURL) {
+          updateURL();
+        }
+      }, 150);
+    }
   }
 
   // Get all unique dietary labels from recipes
@@ -175,13 +228,13 @@
 
 <div class="dark:text-gray-200 dark:bg-gray-900">
 
-<h1 class="text-5xl text-center pt-48 pb-12 font-bold dark:text-white flex items-center justify-center gap-3">
+<h1 class="text-5xl text-center pt-32 pb-12 font-bold dark:text-white flex items-center justify-center gap-3">
   <CookingPot size={48} class="text-gray-700 dark:text-gray-300" />
   Oppskrifter
 </h1>
 
 <!-- Search and Filters Section -->
-<div class="max-w-6xl mx-auto px-4 pb-8 dark:bg-gray-900">
+<div class="max-w-6xl mx-auto px-4 dark:bg-gray-900">
   <!-- Search Bar -->
   <div class="flex items-center gap-2 mb-6">
     <form class="flex items-center flex-1" on:submit|preventDefault={handleSearch}>
@@ -349,7 +402,7 @@
           on:click={() => sortBy = sortBy === 'price-asc' ? 'price-desc' : sortBy === 'price-desc' ? 'none' : 'price-asc'}
           class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1 {sortBy.startsWith('price') ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}"
         >
-          <DollarSign size={14} />
+          <PiggyBank size={14} />
           Pris
           {#if sortBy === 'price-asc'}
             <ArrowUp size={14} />
@@ -373,9 +426,9 @@
 </div>
 
 <!-- Recipes Grid -->
-<div class="flex justify-evenly flex-wrap max-w-5xl m-auto dark:bg-gray-900 px-4">
+<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 max-w-7xl m-auto dark:bg-gray-900 px-2 sm:px-4 py-8">
   {#if filteredRecipes.length === 0}
-    <div class="w-full text-center py-12">
+    <div class="col-span-full text-center py-12">
       <p class="text-lg text-gray-600 dark:text-gray-400 mb-2">Ingen oppskrifter funnet</p>
       <p class="text-sm text-gray-500 dark:text-gray-500 mb-4">Prøv å justere filtrene eller søket</p>
       {#if hasActiveFilters()}
@@ -390,61 +443,106 @@
     </div>
   {:else}
     {#each filteredRecipes as recipe}
-    <Card class="border-none shadow-none dark:bg-gray-900" padding="sm">
-      <div class="flex flex-col items-center pb-4">
-        <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{recipe.title}</h5>
-        <span class="text-sm text-gray-500 dark:text-gray-400">{recipe.subtitle}</span>
+    <a 
+      href="/recipes/{encodeURIComponent(recipe.title)}"
+      class="group overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-full w-full flex flex-col relative hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+    >
+      <!-- Recipe Image -->
+      <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
+        {#if recipe.recipeImage}
+          <img 
+            src={recipe.recipeImage} 
+            alt={recipe.title}
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        {:else}
+          <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800">
+            <CookingPot size={32} class="sm:size-12 text-gray-400 dark:text-gray-500" />
+          </div>
+        {/if}
         
-        <!-- Dietary Labels -->
+        <!-- Dietary Labels Overlay (top left) -->
         {#if recipe.dietaryLabels && recipe.dietaryLabels.length > 0}
-          <div class="flex flex-wrap justify-center gap-1.5 mt-2 mb-2">
-            {#each recipe.dietaryLabels as label}
+          <div class="absolute left-1.5 sm:left-3 top-1.5 sm:top-3 flex flex-wrap gap-1 max-w-[70%]">
+            {#each recipe.dietaryLabels.slice(0, 1) as label}
               {@const config = getLabelConfig(label)}
               {@const Icon = config?.icon}
               <span
-                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium {getLabelColorClasses(label, true)}"
+                class="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(label, true)}"
               >
                 {#if Icon}
-                  <Icon size={12} />
+                  <Icon size={10} class="sm:size-3" />
                 {/if}
-                <span>{label}</span>
+                <span class="hidden sm:inline">{label}</span>
               </span>
             {/each}
+            {#if recipe.dietaryLabels.length > 1}
+              <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300">
+                +{recipe.dietaryLabels.length - 1}
+              </span>
+            {/if}
           </div>
         {/if}
+      </div>
+
+      <!-- Recipe Content -->
+      <div class="flex flex-col flex-grow p-2 sm:p-4">
+        <!-- Title -->
+        <h3 class="font-semibold text-sm sm:text-lg leading-tight text-gray-900 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+          {recipe.title}
+        </h3>
         
-        <!-- Prep Time Display -->
-        {#if recipe.prepTime && recipe.prepTime > 0}
-          <div class="mt-2 mb-2 flex items-center justify-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-            <Clock size={16} class="text-gray-500 dark:text-gray-400" />
-            <span class="font-medium">{recipe.prepTime} min</span>
-          </div>
+        <!-- Subtitle (if exists) - hidden on mobile -->
+        {#if recipe.subtitle}
+          <p class="hidden sm:block text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-1">
+            {recipe.subtitle}
+          </p>
         {/if}
-        
-        <!-- Price Display -->
-        {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
-          <div class="mt-2 text-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris:</span>
-            <div class="text-lg font-bold text-gray-900 dark:text-white">
-              {recipe.estimatedPrice.toFixed(2)} kr
+
+        <!-- Recipe Info (Prep Time, Portions, Price) -->
+        <div class="mt-auto flex flex-col gap-1.5 sm:gap-2 pt-2 sm:pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <!-- Prep Time -->
+            {#if recipe.prepTime && recipe.prepTime > 0}
+              <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                <Clock size={12} class="sm:size-4 text-gray-500 dark:text-gray-400" />
+                <span class="font-medium">{recipe.prepTime} min</span>
+              </div>
+            {:else}
+              <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                <Clock size={12} class="sm:size-4" />
+                <span>-</span>
+              </div>
+            {/if}
+
+            <!-- Portions - hidden on mobile, shown on sm+ -->
+            {#if recipe.portions}
+              <div class="hidden sm:flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                <Users size={16} class="text-gray-500 dark:text-gray-400" />
+                <span class="font-medium">{recipe.portions} {recipe.portions === 1 ? 'porsjon' : 'porsjoner'}</span>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Price -->
+          {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
+            {@const pricePerPortion = recipe.portions && recipe.portions > 0 ? recipe.estimatedPrice / recipe.portions : recipe.estimatedPrice}
+            <div class="flex items-center gap-1 text-gray-900 dark:text-white">
+              <PiggyBank size={12} class="sm:size-4 text-gray-700 dark:text-gray-300" />
+              <span class="font-semibold text-sm sm:text-base">{pricePerPortion.toFixed(2)} kr</span>
+              <span class="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
             </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
-          </div>
-        {:else}
-          <div class="mt-2 text-center">
-            <span class="text-xs text-gray-400 dark:text-gray-500">Pris ikke tilgjengelig</span>
-          </div>
-        {/if}
-        
-        <div class="flex mt-4 space-x-3 lg:mt-6">
-          <a href="/recipes/{recipe.title}">
-            <button class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-fit pr-4 pl-4 m-5 dark:bg-gray-800 dark:text-white dark:border-white">
-              Se Oppskrift
-            </button>
-          </a>
+          {:else}
+            <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs sm:text-sm">
+              <PiggyBank size={12} class="sm:size-4" />
+              <span class="hidden sm:inline">Pris ikke tilgjengelig</span>
+              <span class="sm:hidden">-</span>
+            </div>
+          {/if}
         </div>
       </div>
-    </Card>
+    </a>
     {/each}
   {/if}
 </div>

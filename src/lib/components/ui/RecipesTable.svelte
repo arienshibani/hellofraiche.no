@@ -296,8 +296,8 @@
                 <TableBodyRow class="hover:bg-gray-50 dark:hover:bg-gray-700 border-0">
                     <TableBodyCell class="font-medium dark:text-white border-0">
                         <a
-                            href="/recipes/{recipe.title}"
-                            class="font-bold text-lg hover:text-blue-700 transition-colors dark:text-white hover:underline cursor-pointer"
+                            href="/recipes/{encodeURIComponent(recipe.title)}"
+                            class="font-bold text-lg hover:text-blue-700 dark:hover:text-blue-400 transition-colors dark:text-white hover:underline cursor-pointer"
                             title="Se oppskrift"
                         >
                             {recipe.title}
