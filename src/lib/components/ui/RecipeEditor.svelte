@@ -5,7 +5,7 @@
   import { Info, AlertTriangle, Lightbulb, Plus, Trash2, Edit2, X } from 'lucide-svelte';
   import ImageUpload from './ImageUpload.svelte';
   import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
-  import type { Recipe, RecipeIngredient, RecipeTip, IngredientWithPrice } from '$lib/types';
+  import type { Recipe, RecipeTip, IngredientWithPrice } from '$lib/types';
 
   type TipWithTempId = RecipeTip & { _tempId?: string };
 
