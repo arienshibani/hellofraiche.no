@@ -3,6 +3,7 @@
     import { createEventDispatcher } from 'svelte';
     import AddIngredientModal from '$lib/components/ui/modals/AddIngredientModal.svelte';
     import CoverageModal from '$lib/components/ui/modals/CoverageModal.svelte';
+    import { ArrowUp, ArrowDown } from 'lucide-svelte';
 
     // Props
     export let recipes: any[] = [];
@@ -10,6 +11,12 @@
     export let showAdminActions = false;
 
     const dispatch = createEventDispatcher();
+
+    // Sorting state
+    type SortField = 'title' | 'prepTime' | 'portions' | 'ingredients' | 'coverage' | null;
+    type SortDirection = 'asc' | 'desc' | null;
+    let sortBy: SortField = null;
+    let sortDirection: SortDirection = null;
 
     // Modal states
     let showCoverageModal = false;
@@ -19,15 +26,82 @@
     let addError = '';
     let selectedRecipe: any = null;
 
-    // Calculate coverage for a recipe
+    // Check if ingredient has valid price data
+    function hasPriceData(ingredientName: string): boolean {
+        const ingredient = allIngredients.find((ai: any) => ai.name === ingredientName);
+        if (!ingredient) return false;
+        if (!ingredient.ean) return false;
+        if (!ingredient.data || !ingredient.data.products || !Array.isArray(ingredient.data.products)) return false;
+        return ingredient.data.products.some((product: any) => 
+            product.current_price && product.current_price.price && product.current_price.price > 0
+        );
+    }
+
+    // Calculate coverage for a recipe - now checks for price data
     function getCoverage(recipe: any) {
         if (!recipe.recipeIngredients || !Array.isArray(recipe.recipeIngredients)) return undefined;
         const filtered = recipe.recipeIngredients.filter((ri: any) => !ri.isBulkItem);
         const total = filtered.length;
         if (total === 0) return 100;
-        const matched = filtered.filter((ri: any) => allIngredients.some(ai => ai.name === ri.name)).length;
+        const matched = filtered.filter((ri: any) => hasPriceData(ri.name)).length;
         return Math.trunc((matched / total) * 100);
     }
+
+    // Handle column header click for sorting
+    function handleSort(field: SortField) {
+        if (sortBy === field) {
+            if (sortDirection === 'asc') {
+                sortDirection = 'desc';
+            } else if (sortDirection === 'desc') {
+                sortBy = null;
+                sortDirection = null;
+            }
+        } else {
+            sortBy = field;
+            sortDirection = 'asc';
+        }
+    }
+
+    // Get sort icon for a column
+    function getSortIcon(field: SortField) {
+        if (sortBy !== field) return null;
+        return sortDirection === 'asc' ? ArrowUp : ArrowDown;
+    }
+
+    // Sort recipes based on current sort state
+    $: sortedRecipes = sortBy ? [...recipes].sort((a: any, b: any) => {
+        let aVal: any;
+        let bVal: any;
+
+        switch (sortBy) {
+            case 'title':
+                aVal = (a.title || '').toLowerCase();
+                bVal = (b.title || '').toLowerCase();
+                break;
+            case 'prepTime':
+                aVal = a.prepTime || 0;
+                bVal = b.prepTime || 0;
+                break;
+            case 'portions':
+                aVal = a.portions || 0;
+                bVal = b.portions || 0;
+                break;
+            case 'ingredients':
+                aVal = a.recipeIngredients ? a.recipeIngredients.length : 0;
+                bVal = b.recipeIngredients ? b.recipeIngredients.length : 0;
+                break;
+            case 'coverage':
+                aVal = getCoverage(a) ?? 0;
+                bVal = getCoverage(b) ?? 0;
+                break;
+            default:
+                return 0;
+        }
+
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    }) : recipes;
 
     // Get coverage color
     function getCoverageColor(coverage: number | undefined) {
@@ -110,18 +184,72 @@
 <div class="overflow-x-auto">
     <Table class="w-full border-0">
         <TableHead>
-            <TableHeadCell class="border-0">Tittel</TableHeadCell>
-            <TableHeadCell class="border-0">Undertittel</TableHeadCell>
-            <TableHeadCell class="border-0 text-center">Forberedelsestid</TableHeadCell>
-            <TableHeadCell class="border-0 text-center">Porsjoner</TableHeadCell>
-            <TableHeadCell class="border-0 text-center">Ingredienser</TableHeadCell>
-            <TableHeadCell class="border-0 text-center">Dekning</TableHeadCell>
+            <TableHeadCell 
+                class="border-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+                on:click={() => handleSort('title')}
+            >
+                <div class="flex items-center gap-2">
+                    Tittel
+                    {#if getSortIcon('title')}
+                        {@const Icon = getSortIcon('title')}
+                        <Icon size={16} class="text-gray-500" />
+                    {/if}
+                </div>
+            </TableHeadCell>
+            <TableHeadCell 
+                class="border-0 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+                on:click={() => handleSort('prepTime')}
+            >
+                <div class="flex items-center justify-center gap-2">
+                    Forberedelsestid
+                    {#if getSortIcon('prepTime')}
+                        {@const Icon = getSortIcon('prepTime')}
+                        <Icon size={16} class="text-gray-500" />
+                    {/if}
+                </div>
+            </TableHeadCell>
+            <TableHeadCell 
+                class="border-0 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+                on:click={() => handleSort('portions')}
+            >
+                <div class="flex items-center justify-center gap-2">
+                    Porsjoner
+                    {#if getSortIcon('portions')}
+                        {@const Icon = getSortIcon('portions')}
+                        <Icon size={16} class="text-gray-500" />
+                    {/if}
+                </div>
+            </TableHeadCell>
+            <TableHeadCell 
+                class="border-0 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+                on:click={() => handleSort('ingredients')}
+            >
+                <div class="flex items-center justify-center gap-2">
+                    Ingredienser
+                    {#if getSortIcon('ingredients')}
+                        {@const Icon = getSortIcon('ingredients')}
+                        <Icon size={16} class="text-gray-500" />
+                    {/if}
+                </div>
+            </TableHeadCell>
+            <TableHeadCell 
+                class="border-0 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+                on:click={() => handleSort('coverage')}
+            >
+                <div class="flex items-center justify-center gap-2">
+                    Dekning
+                    {#if getSortIcon('coverage')}
+                        {@const Icon = getSortIcon('coverage')}
+                        <Icon size={16} class="text-gray-500" />
+                    {/if}
+                </div>
+            </TableHeadCell>
             {#if showAdminActions}
                 <TableHeadCell class="border-0 text-center">Handlinger</TableHeadCell>
             {/if}
         </TableHead>
         <TableBody>
-            {#each recipes as recipe}
+            {#each sortedRecipes as recipe}
                 {@const coverage = getCoverage(recipe)}
                 {@const coverageColor = getCoverageColor(coverage)}
                 {@const ingredientCount = recipe.recipeIngredients ? recipe.recipeIngredients.length : 0}
@@ -134,9 +262,6 @@
                         >
                             {recipe.title}
                         </a>
-                    </TableBodyCell>
-                    <TableBodyCell class="text-gray-600 dark:text-gray-300 border-0">
-                        {recipe.subtitle || '-'}
                     </TableBodyCell>
                     <TableBodyCell class="text-center dark:text-gray-200 border-0">
                         {recipe.prepTime ? `${recipe.prepTime} min` : '-'}
@@ -194,6 +319,7 @@
         on:close={closeCoverageModal}
         on:addIngredient={handleCoverageAdd}
         on:addBulk={handleCoverageAddBulk}
+        on:refresh={() => dispatch('refresh')}
     />
 {/if}
 
