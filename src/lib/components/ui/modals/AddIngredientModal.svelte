@@ -40,12 +40,12 @@
       <h3 class="text-xl font-bold mb-4 dark:text-white">Legg til ingrediens</h3>
       <form on:submit|preventDefault={handleSave} class="flex flex-col gap-4">
         <div>
-          <label class="block text-sm font-medium mb-1 dark:text-gray-100">Navn</label>
-          <input class="w-full border rounded p-2 dark:bg-gray-700 dark:text-white" value={name} readonly />
+          <label for="add-ingredient-name" class="block text-sm font-medium mb-1 dark:text-gray-100">Navn</label>
+          <input id="add-ingredient-name" class="w-full border rounded p-2 dark:bg-gray-700 dark:text-white" value={name} readonly />
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1 dark:text-gray-100">EAN</label>
-          <input class="w-full border rounded p-2 dark:bg-gray-700 dark:text-white" bind:value={localEAN} required disabled={isBulkItem} />
+          <label for="add-ingredient-ean" class="block text-sm font-medium mb-1 dark:text-gray-100">EAN</label>
+          <input id="add-ingredient-ean" class="w-full border rounded p-2 dark:bg-gray-700 dark:text-white" bind:value={localEAN} required disabled={isBulkItem} />
         </div>
         <div class="flex items-center gap-2">
           <input id="bulkitem" type="checkbox" bind:checked={isBulkItem} />

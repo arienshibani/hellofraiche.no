@@ -155,8 +155,16 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="click-spark-container"
+  role="button"
+  tabindex="0"
   on:mousedown={handleClick}
   on:pointerdown={handleClick}
+  on:keydown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick(e);
+    }
+  }}
 >
   <canvas
     bind:this={canvas}
