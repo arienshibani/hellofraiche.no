@@ -21,7 +21,8 @@
     recipeIngredients: [],
     recipeId: nanoid(),
     tips: [],
-    utkast: true // Default new recipes to draft mode
+    utkast: true, // Default new recipes to draft mode
+    dietaryLabels: [] // Start with empty dietary labels
   };
   
   // Initialize JSON string with default recipe
