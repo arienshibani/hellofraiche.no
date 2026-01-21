@@ -22,6 +22,27 @@
   export let data;
 
   $: ({ mealPlans } = data);
+
+  // Soothing color palette for meal plan cards
+  const soothingColors = [
+    'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800',
+    'bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800',
+    'bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900 dark:to-pink-800',
+    'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800',
+    'bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-800',
+    'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900 dark:to-indigo-800',
+    'bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900 dark:to-teal-800',
+    'bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900 dark:to-rose-800',
+    'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900 dark:to-cyan-800',
+    'bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800',
+    'bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-900 dark:to-violet-800',
+    'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800',
+  ];
+
+  // Get color for a meal plan based on its index
+  const getColorForMealPlan = (index) => {
+    return soothingColors[index % soothingColors.length];
+  };
 </script>
 
 <svelte:head>
@@ -74,12 +95,11 @@
             <span class="text-xs text-gray-400 dark:text-gray-500">Pris ikke tilgjengelig</span>
           </div>
         {/if}
-        <img
-          src="https://placehold.co/150x150/?text={mealPlan.name[0]}"
-          alt="Placeholder image"
-          class="w-32 h-32 rounded-full object-cover mt-4 mb-4"
+        <div
+          class="w-32 h-32 rounded-full mt-4 mb-4 {getColorForMealPlan(index)} flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105"
           aria-hidden="true"
-        />
+        >
+        </div>
         <div class="flex mt-4 space-x-3 lg:mt-6">
           <a href="/plans/{mealPlan.name}">
             <button

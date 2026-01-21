@@ -6,6 +6,7 @@
     import FeatureList from "$lib/components/ui/feature-list/FeatureList.svelte";
     import { onMount } from "svelte";
     import { Utensils } from "lucide-svelte";
+    import { getLabelConfig, getLabelColorClasses } from '$lib/util/dietaryLabels';
 
     // Retreived from +server.js load function
     export let data;
@@ -68,17 +69,34 @@ features={[
     pauseOnHover={false}
 >
     <svelte:fragment slot="default" let:item>
-                                <Card class="w-full max-w-[280px] h-[160px] bg-sky-100 dark:bg-gray-800 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
+                                <Card class="w-full max-w-[280px] h-auto min-h-[160px] bg-sky-100 dark:bg-gray-800 mb-8 cursor-pointer hover:shadow-lg transition-shadow duration-100" on:click={() => goto(`/recipes/${item.title}`)}>
                 <div class="p-4 h-full flex flex-col justify-between">
-                    <div class="flex-1 flex items-center justify-center">
+                    <div class="flex-1 flex flex-col items-center justify-center">
                         <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white text-center">
                             {item.title}
                         </h5>
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-600 dark:text-gray-400 truncate-subtitle">
-                            {item.subtitle}
-                        </p>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 truncate-subtitle">
+                                {item.subtitle}
+                            </p>
+                        </div>
+                        <!-- Dietary Labels -->
+                        {#if item.dietaryLabels && item.dietaryLabels.length > 0}
+                          <div class="flex flex-wrap justify-center gap-1.5 mt-2">
+                            {#each item.dietaryLabels as label}
+                              {@const config = getLabelConfig(label)}
+                              {@const Icon = config?.icon}
+                              <span
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium {getLabelColorClasses(label, true)}"
+                              >
+                                {#if Icon}
+                                  <Icon size={12} />
+                                {/if}
+                                <span>{label}</span>
+                              </span>
+                            {/each}
+                          </div>
+                        {/if}
                     </div>
                 </div>
             </Card>

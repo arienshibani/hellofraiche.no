@@ -15,11 +15,39 @@ export type Dish = {
 };
 
 // Database ingredient with price data from Kassal.app
+// Note: The API response is nested as data.data.products (the outer data is what we store, inner data is the API response)
 export type IngredientWithPrice = {
     _id: string;
     name: string;
     ean: string;
     data?: {
+        // The API response from Kassal.app is nested inside data.data
+        data?: {
+            products?: Array<{
+                store?: {
+                    name: string;
+                };
+                current_price?: {
+                    price: number;
+                };
+                url?: string;
+                weight?: number;
+                weight_unit?: string;
+                nutrition?: Array<{
+                    code: string;
+                    display_name: string;
+                    amount: number;
+                    unit: string;
+                }>;
+            }>;
+            nutrition?: Array<{
+                code: string;
+                display_name: string;
+                amount: number;
+                unit: string;
+            }>;
+        };
+        // Legacy support: some ingredients might have products directly in data.products
         products?: Array<{
             store?: {
                 name: string;
@@ -75,6 +103,7 @@ export type Recipe = {
     recipeId: string; // Unique identifier for the recipe
     mealPlanId?: string; // Optional identifier for the meal plan this recipe belongs to
     utkast?: boolean; // Draft mode - if true, recipe is not shown on public pages (default: true for new recipes)
+    dietaryLabels?: string[]; // Array of dietary labels (e.g., "Vegansk", "Glutenfri", custom labels)
 };
 
 // MealPlan recipe reference (used in mealPlan.recipes array)

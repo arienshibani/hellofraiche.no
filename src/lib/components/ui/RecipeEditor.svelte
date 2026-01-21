@@ -6,6 +6,7 @@
   import ImageUpload from './ImageUpload.svelte';
   import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
   import type { Recipe, RecipeTip, IngredientWithPrice } from '$lib/types';
+  import { PREDEFINED_DIETARY_LABELS, getLabelColorClasses, getLabelConfig } from '$lib/util/dietaryLabels';
 
   type TipWithTempId = RecipeTip & { _tempId?: string };
 
@@ -95,7 +96,9 @@
     tips: initialRecipe.tips?.map((tip, idx) => ({
       ...tip,
       _tempId: `tip-${idx}-${tip.associatedWithStepNr}`
-    })) || []
+    })) || [],
+    // Initialize dietary labels
+    dietaryLabels: initialRecipe.dietaryLabels || []
   };
   let editingStepIndex: number | null = null;
   let editingTipId: string | null = null; // Use unique ID for tip editing
@@ -128,6 +131,9 @@
   let selectedIngredientId = '';
   let newIngredientAmount = 0;
   let newIngredientMeasurement = 'stk';
+
+  // Dietary labels state
+  let customLabelInput = '';
 
   // Filtered ingredients for dropdown
   $: filteredIngredients = allIngredients.filter(ing =>
@@ -454,6 +460,58 @@
   function handleImageChange(event: CustomEvent<string | undefined>) {
     editedRecipe.recipeImage = event.detail;
   }
+
+  // Dietary labels functions
+  function toggleDietaryLabel(labelText: string) {
+    if (!editedRecipe.dietaryLabels) {
+      editedRecipe.dietaryLabels = [];
+    }
+    const index = editedRecipe.dietaryLabels.indexOf(labelText);
+    if (index > -1) {
+      editedRecipe.dietaryLabels = editedRecipe.dietaryLabels.filter(l => l !== labelText);
+    } else {
+      editedRecipe.dietaryLabels = [...editedRecipe.dietaryLabels, labelText];
+    }
+    // Force reactivity
+    editedRecipe = { ...editedRecipe };
+  }
+
+  function addCustomLabel() {
+    const trimmed = customLabelInput.trim();
+    if (!trimmed) return;
+    
+    // Check if already exists
+    if (editedRecipe.dietaryLabels?.includes(trimmed)) {
+      customLabelInput = '';
+      return;
+    }
+    
+    // Check if it's a predefined label
+    const predefined = PREDEFINED_DIETARY_LABELS.find(l => l.label === trimmed);
+    if (predefined) {
+      toggleDietaryLabel(trimmed);
+      customLabelInput = '';
+      return;
+    }
+    
+    // Add custom label
+    if (!editedRecipe.dietaryLabels) {
+      editedRecipe.dietaryLabels = [];
+    }
+    editedRecipe.dietaryLabels = [...editedRecipe.dietaryLabels, trimmed];
+    editedRecipe = { ...editedRecipe };
+    customLabelInput = '';
+  }
+
+  function removeDietaryLabel(labelText: string) {
+    if (!editedRecipe.dietaryLabels) return;
+    editedRecipe.dietaryLabels = editedRecipe.dietaryLabels.filter(l => l !== labelText);
+    editedRecipe = { ...editedRecipe };
+  }
+
+  function isLabelSelected(labelText: string): boolean {
+    return editedRecipe.dietaryLabels?.includes(labelText) || false;
+  }
 </script>
 
 <div class="w-full max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -572,6 +630,86 @@
         value={editedRecipe.recipeImage}
         on:change={handleImageChange}
       />
+    </div>
+
+    <!-- Dietary Labels Section -->
+    <div class="mb-6">
+      <div class="block text-sm font-medium dark:text-gray-300 mb-3">Kostholdsmerker</div>
+      
+      <!-- Predefined Labels Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+        {#each PREDEFINED_DIETARY_LABELS as config}
+          {@const isSelected = isLabelSelected(config.label)}
+          {@const Icon = config.icon}
+          <label
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all hover:scale-105 {getLabelColorClasses(config.label, isSelected)}"
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              on:change={() => toggleDietaryLabel(config.label)}
+              class="sr-only"
+              aria-label={config.label}
+            />
+            {#if Icon}
+              <Icon size={16} />
+            {/if}
+            <span>{config.label}</span>
+          </label>
+        {/each}
+      </div>
+
+      <!-- Custom Label Input -->
+      <div class="flex gap-2">
+        <input
+          type="text"
+          bind:value={customLabelInput}
+          placeholder="Legg til egendefinert merke..."
+          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-500"
+          on:keydown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              addCustomLabel();
+            }
+          }}
+        />
+        <button
+          type="button"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors dark:bg-blue-900"
+          on:click={addCustomLabel}
+        >
+          Legg til
+        </button>
+      </div>
+
+      <!-- Selected Labels Display -->
+      {#if editedRecipe.dietaryLabels && editedRecipe.dietaryLabels.length > 0}
+        <div class="mt-4">
+          <p class="text-sm font-medium dark:text-gray-300 mb-2">Valgte merker:</p>
+          <div class="flex flex-wrap gap-2">
+            {#each editedRecipe.dietaryLabels as label}
+              {@const config = getLabelConfig(label)}
+              {@const Icon = config?.icon}
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium {getLabelColorClasses(label, true)}"
+              >
+                {#if Icon}
+                  <Icon size={16} />
+                {/if}
+                <span>{label}</span>
+                <button
+                  type="button"
+                  class="ml-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                  on:click={() => removeDietaryLabel(label)}
+                  aria-label={`Fjern ${label}`}
+                >
+                  <X size={14} />
+                </button>
+              </span>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 

@@ -10,9 +10,10 @@
     import IngredientsTable from "$lib/components/ui/IngredientsTable.svelte";
     import NutritionTable from "$lib/components/ui/NutritionTable.svelte";
     import { Alert } from "flowbite-svelte";
-    import { Info, AlertTriangle, Lightbulb } from "lucide-svelte";
+    import { Info, AlertTriangle, Lightbulb, Clock } from "lucide-svelte";
     import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
     import type { RecipePageData, RecipeTip, RecipeIngredient, IngredientWithPrice } from "$lib/types";
+    import { getLabelConfig, getLabelColorClasses } from '$lib/util/dietaryLabels';
 
     // Load data from +page.server.ts
     $: ({ recipe, mealPlan, ingredients } = data);
@@ -65,9 +66,11 @@
     $: totalRecipePrice = recipe.recipeIngredients
         .map((ingredient: RecipeIngredient): number | null => {
             const ingredientData = ingredients.find((ing: IngredientWithPrice) => ing.name === ingredient.name);
-            if (!ingredientData || !ingredientData.data || !ingredientData.data.products) return null;
+            // The API response is nested: data.data.products (not data.products)
+            const products = ingredientData?.data?.data?.products || ingredientData?.data?.products;
+            if (!ingredientData || !ingredientData.data || !products) return null;
 
-            const menyProduct = ingredientData.data.products.find((product: NonNullable<NonNullable<IngredientWithPrice['data']>['products']>[0]) =>
+            const menyProduct = products.find((product) =>
                 product?.store?.name === 'Meny'
             );
 
@@ -175,6 +178,32 @@
         <h1 class="text-2xl text-center smallerTextOnSmallScreens dark:text-gray-300">
             {recipe.subtitle}
         </h1>
+
+        <!-- Dietary Labels -->
+        {#if recipe.dietaryLabels && recipe.dietaryLabels.length > 0}
+            <div class="flex flex-wrap justify-center gap-2 mt-4 mb-4">
+                {#each recipe.dietaryLabels as label}
+                    {@const config = getLabelConfig(label)}
+                    {@const Icon = config?.icon}
+                    <span
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium {getLabelColorClasses(label, true)}"
+                    >
+                        {#if Icon}
+                            <Icon size={16} />
+                        {/if}
+                        <span>{label}</span>
+                    </span>
+                {/each}
+            </div>
+        {/if}
+
+        <!-- Prep Time Display -->
+        {#if recipe.prepTime && recipe.prepTime > 0}
+          <div class="mt-4 mb-4 flex items-center justify-center gap-2 text-base text-gray-600 dark:text-gray-400">
+            <Clock size={18} class="text-gray-500 dark:text-gray-400" />
+            <span class="font-medium">{recipe.prepTime} min</span>
+          </div>
+        {/if}
 
         <!-- Recipe Image - Optional, rendered if recipeImage exists -->
         {#if recipe.recipeImage}
