@@ -17,8 +17,9 @@
   </div>
   <div class="text-gray-600 dark:text-gray-300 text-sm">
     EAN: {ingredient.ean || 'N/A'}
-    {#if ingredient.data && ingredient.data.products && ingredient.data.products.length > 0}
-      {#each [ingredient.data.products[0]] as product}
+    {@const products = ingredient.data?.data?.products || ingredient.data?.products}
+    {#if ingredient.data && products && products.length > 0}
+      {#each [products[0]] as product}
         <br />
         Pris: {product.current_price?.price ? Number(product.current_price.price).toFixed(2) + ' kr' : 'N/A'}
         {#if product.current_price?.unit_price}

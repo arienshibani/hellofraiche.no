@@ -13,8 +13,10 @@
     const ingredient = allIngredients.find((ai: any) => ai.name === ingredientName);
     if (!ingredient) return false;
     if (!ingredient.ean) return false;
-    if (!ingredient.data || !ingredient.data.products || !Array.isArray(ingredient.data.products)) return false;
-    return ingredient.data.products.some((product: any) => 
+    // The API response is nested: data.data.products (not data.products)
+    const products = ingredient.data?.data?.products || ingredient.data?.products;
+    if (!ingredient.data || !products || !Array.isArray(products)) return false;
+    return products.some((product: any) => 
       product.current_price && product.current_price.price && product.current_price.price > 0
     );
   }

@@ -67,8 +67,10 @@ export const load = async (): Promise<MealPlansPageData> => {
 					if (recipeData && recipeData.recipeIngredients) {
 						recipeData.recipeIngredients.forEach((recipeIngredient) => {
 							const ingredientData = ingredients.find((ing: IngredientWithPrice) => ing.name === recipeIngredient.name);
-							if (ingredientData && ingredientData.data && ingredientData.data.products) {
-								const menyProduct = ingredientData.data.products.find((product) =>
+							// The API response is nested: data.data.products (not data.products)
+							const products = ingredientData?.data?.data?.products || ingredientData?.data?.products;
+							if (ingredientData && ingredientData.data && products) {
+								const menyProduct = products.find((product) =>
 									product.store && product.store.name === 'Meny'
 								);
 

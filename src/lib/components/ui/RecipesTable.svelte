@@ -3,7 +3,7 @@
     import { createEventDispatcher } from 'svelte';
     import AddIngredientModal from '$lib/components/ui/modals/AddIngredientModal.svelte';
     import CoverageModal from '$lib/components/ui/modals/CoverageModal.svelte';
-    import { ArrowUp, ArrowDown } from 'lucide-svelte';
+    import { ArrowUp, ArrowDown, AlertTriangle } from 'lucide-svelte';
 
     // Props
     export let recipes: any[] = [];
@@ -31,8 +31,10 @@
         const ingredient = allIngredients.find((ai: any) => ai.name === ingredientName);
         if (!ingredient) return false;
         if (!ingredient.ean) return false;
-        if (!ingredient.data || !ingredient.data.products || !Array.isArray(ingredient.data.products)) return false;
-        return ingredient.data.products.some((product: any) => 
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!ingredient.data || !products || !Array.isArray(products)) return false;
+        return products.some((product: any) => 
             product.current_price && product.current_price.price && product.current_price.price > 0
         );
     }
@@ -133,28 +135,65 @@
         showAddModal = false;
     }
 
-    function handleAddIngredient({ detail }: { detail: any }) {
-        if (!detail.name || !detail.ean) {
-            addError = 'Navn og EAN er påkrevd';
+    async function handleAddIngredient(event: { detail: any }) {
+        const detail = event.detail;
+        
+        // Handle bulk item marking
+        if (detail.name && !detail.ean) {
+            // This is a bulk item - mark it in the recipe
+            if (selectedRecipe?._id) {
+                try {
+                    const response = await fetch(`/admin/dashboard/api/recipes/${selectedRecipe._id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ markBulk: detail.name })
+                    });
+                    if (response.ok) {
+                        closeAddModal();
+                        dispatch('refresh');
+                    }
+                } catch (error) {
+                    addError = 'Feil ved markering som bulkvare';
+                }
+            }
             return;
         }
+        
+        if (!detail.name || !detail.ean) {
+            addError = detail.error || 'Navn og EAN er påkrevd';
+            return;
+        }
+        
+        if (detail.error) {
+            addError = detail.error;
+            return;
+        }
+        
         addError = '';
-        dispatch('addIngredient', { name: detail.name, ean: detail.ean });
+        
+        try {
+            // First, create the ingredient in the database
+            const createResponse = await fetch('/admin/dashboard/api/ingredients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: detail.name, ean: detail.ean })
+            });
 
-        // Also update the recipe's ingredient with the EAN
-        fetch(`/admin/dashboard/api/recipes/${selectedRecipe._id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                updateEAN: {
-                    name: detail.name,
-                    ean: detail.ean
-                }
-            })
-        }).then(() => {
-            // Refresh to show updated recipe with EAN
+            if (!createResponse.ok) {
+                const errorData = await createResponse.json();
+                addError = errorData.error || 'Kunne ikke opprette ingrediens';
+                return;
+            }
+
+            // Close the modal
+            closeAddModal();
+
+            // Refresh to show updated data (ingredient will now appear in allIngredients)
             dispatch('refresh');
-        });
+        } catch (error: any) {
+            addError = error.message || 'Feil ved oppretting av ingrediens';
+            console.error('Error creating ingredient:', error);
+        }
     }
 
     function handleCoverageAdd({ detail }: { detail: any }) {
@@ -275,13 +314,29 @@
                     </TableBodyCell>
                     <TableBodyCell class="text-center border-0">
                         {#if coverage !== undefined}
-                            <button
-                                class="font-semibold {coverageColor} hover:underline cursor-pointer"
-                                on:click={() => openCoverageModal(recipe)}
-                                title="Klikk for å se detaljer"
-                            >
-                                {coverage}%
-                            </button>
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button
+                                    class="font-semibold {coverageColor} hover:underline cursor-pointer"
+                                    on:click={() => openCoverageModal(recipe)}
+                                    title="Klikk for å se detaljer"
+                                >
+                                    {coverage}%
+                                </button>
+                                {#if !recipe.recipeImage || recipe.recipeImage.trim() === ''}
+                                    <div class="relative group">
+                                        <AlertTriangle 
+                                            size={16} 
+                                            class="text-yellow-500 dark:text-yellow-400 cursor-help" 
+                                        />
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                            Oppskriften mangler bilde
+                                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                <div class="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {/if}
+                            </div>
                         {:else}
                             <span class="text-gray-400">-</span>
                         {/if}
@@ -353,7 +408,11 @@
 {#if showAddModal}
     <AddIngredientModal
         name={addName}
+        ean=""
+        error={addError}
+        open={showAddModal}
         on:close={closeAddModal}
-        on:addIngredient={handleAddIngredient}
+        on:save={(e) => handleAddIngredient(e)}
+        on:markBulkItem={(e) => handleCoverageAddBulk(e)}
     />
 {/if}

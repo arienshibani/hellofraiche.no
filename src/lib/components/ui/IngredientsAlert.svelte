@@ -4,12 +4,14 @@
     
     // Calculate ingredients needing attention
     $: ingredientsNeedingAttention = ingredients.filter(ingredient => {
-        if (!ingredient.data || !ingredient.data.products || ingredient.data.products.length === 0) {
+        // The API response is nested: data.data.products (not data.products)
+        const products = ingredient.data?.data?.products || ingredient.data?.products;
+        if (!ingredient.data || !products || products.length === 0) {
             return true; // No data at all
         }
         
         // Check if there's any product with valid price data
-        const hasPriceData = ingredient.data.products.some((product: any) => {
+        const hasPriceData = products.some((product: any) => {
             if (!product.current_price || !product.current_price.price) {
                 return false;
             }
