@@ -53,3 +53,47 @@ export type RecipeIngredient = {
     measurement: string;
     isBulkItem?: boolean;
 };
+
+// Recipe tip type
+export type RecipeTip = {
+    type: "caution" | "info" | "tip";
+    tipText: string;
+    associatedWithStepNr: number;
+};
+
+// Recipe type (matches the actual structure used in the codebase)
+export type Recipe = {
+    _id?: string; // MongoDB document ID
+    title: string; // Title of the recipe
+    subtitle?: string; // Optional subtitle
+    prepTime?: number; // Number of estimated minutes it takes to prepare
+    portions: number; // Portion size for the recipe
+    recipeImage?: string; // Optional image path or URL
+    steps: string[]; // Steps that must be followed for preparation
+    tips?: RecipeTip[]; // Optional tips array
+    recipeIngredients: RecipeIngredient[]; // List of ingredients in the recipe
+    recipeId: string; // Unique identifier for the recipe
+    mealPlanId?: string; // Optional identifier for the meal plan this recipe belongs to
+};
+
+// MealPlan recipe reference (used in mealPlan.recipes array)
+export type MealPlanRecipe = {
+    recipeId: string;
+    title?: string; // Optional, may not be included in projection
+};
+
+// MealPlan type (matches the structure returned from database)
+export type MealPlan = {
+    _id?: string; // MongoDB document ID
+    name: string; // Name of the meal plan
+    recipes: MealPlanRecipe[]; // Array of recipe references
+    mealPlanId?: string; // Optional unique identifier
+    estimatedPrice?: number; // Optional estimated price (added during processing)
+};
+
+// PageData type for recipe detail page
+export type RecipePageData = {
+    recipe: Recipe;
+    mealPlan: MealPlan | null;
+    ingredients: IngredientWithPrice[];
+};

@@ -27,8 +27,8 @@
         }, 500);
     });
 
-    const recipeCount = data.recipes.length;
-    const mealPlanCount = data.mealplans.length;
+    const recipeCount = data?.recipes?.length || 0;
+    const mealPlanCount = data?.mealplans?.length || 0;
 
 </script>
 

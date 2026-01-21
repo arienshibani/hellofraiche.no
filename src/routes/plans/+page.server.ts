@@ -1,20 +1,30 @@
 import { serializeNonPOJOs } from "$lib/util/serializeNonPOJOs";
 import getDatabase from "$db/mongo";
 import { calculateIngredientPrice } from "$lib/util/conversions";
+import type { MealPlan, Recipe, IngredientWithPrice, MealPlanRecipe } from "$lib/types";
 
-export const load = async function ({ params }) {
+export type MealPlansPageData = {
+	mealPlans: (MealPlan & {
+		recipes: (MealPlanRecipe & { estimatedPrice: number })[];
+		estimatedPrice: number;
+	})[];
+};
+
+export const load = async (): Promise<MealPlansPageData> => {
 	try {
 		const db = await getDatabase();
 
 		// Fetch all meal plans
-		const mealPlansData = await db.collection("mealplans").find({}).toArray();
+		const mealPlansData = await db.collection("mealplans").find({}).toArray() as unknown as MealPlan[];
 
 		// Get all unique recipe titles from all meal plans
-		const allRecipeTitles = new Set();
-		mealPlansData.forEach(mealPlan => {
+		const allRecipeTitles = new Set<string>();
+		mealPlansData.forEach((mealPlan: MealPlan) => {
 			if (mealPlan.recipes) {
-				mealPlan.recipes.forEach(recipe => {
-					allRecipeTitles.add(recipe.title);
+				mealPlan.recipes.forEach((recipe: MealPlanRecipe) => {
+					if (recipe.title) {
+						allRecipeTitles.add(recipe.title);
+					}
 				});
 			}
 		});
@@ -23,14 +33,14 @@ export const load = async function ({ params }) {
 		const recipes = allRecipeTitles.size > 0
 			? await db.collection('recipes').find({
 				title: { $in: Array.from(allRecipeTitles) }
-			}).toArray()
+			}).toArray() as unknown as Recipe[]
 			: [];
 
 		// Get all unique ingredient names from all recipes
-		const allIngredientNames = new Set();
-		recipes.forEach(recipe => {
+		const allIngredientNames = new Set<string>();
+		recipes.forEach((recipe: Recipe) => {
 			if (recipe.recipeIngredients) {
-				recipe.recipeIngredients.forEach(ing => {
+				recipe.recipeIngredients.forEach((ing) => {
 					allIngredientNames.add(ing.name);
 				});
 			}
@@ -40,24 +50,24 @@ export const load = async function ({ params }) {
 		const ingredients = allIngredientNames.size > 0
 			? await db.collection('ingredients').find({
 				name: { $in: Array.from(allIngredientNames) }
-			}).toArray()
+			}).toArray() as unknown as IngredientWithPrice[]
 			: [];
 
 		// Calculate price for each meal plan
-		const mealPlansWithPrices = mealPlansData.map(mealPlan => {
+		const mealPlansWithPrices = mealPlansData.map((mealPlan: MealPlan) => {
 			let totalMealPlanPrice = 0;
-			const recipesWithPrices = [];
+			const recipesWithPrices: (MealPlanRecipe & { estimatedPrice: number })[] = [];
 
 			if (mealPlan.recipes) {
-				mealPlan.recipes.forEach(recipe => {
-					const recipeData = recipes.find(r => r.title === recipe.title);
+				mealPlan.recipes.forEach((recipe: MealPlanRecipe) => {
+					const recipeData = recipes.find((r: Recipe) => r.title === recipe.title);
 					let recipePrice = 0;
 
 					if (recipeData && recipeData.recipeIngredients) {
-						recipeData.recipeIngredients.forEach(recipeIngredient => {
-							const ingredientData = ingredients.find(ing => ing.name === recipeIngredient.name);
+						recipeData.recipeIngredients.forEach((recipeIngredient) => {
+							const ingredientData = ingredients.find((ing: IngredientWithPrice) => ing.name === recipeIngredient.name);
 							if (ingredientData && ingredientData.data && ingredientData.data.products) {
-								const menyProduct = ingredientData.data.products.find(product =>
+								const menyProduct = ingredientData.data.products.find((product) =>
 									product.store && product.store.name === 'Meny'
 								);
 
@@ -100,5 +110,8 @@ export const load = async function ({ params }) {
 		};
 	} catch (error) {
 		console.error("Error accessing the database:", error);
+		return {
+			mealPlans: [],
+		};
 	}
 };
