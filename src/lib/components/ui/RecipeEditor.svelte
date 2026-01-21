@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { nanoid } from 'nanoid';
   import { Alert } from 'flowbite-svelte';
-  import { Info, AlertTriangle, Lightbulb, Plus, Trash2, Edit2, X } from 'lucide-svelte';
+  import { Info, AlertTriangle, Lightbulb, Plus, Trash2, Edit2, X, Clock, Users, FileText, CheckCircle } from 'lucide-svelte';
   import ImageUpload from './ImageUpload.svelte';
   import { ALL_MEASUREMENT_UNITS } from '$lib/util/conversions';
   import type { Recipe, RecipeTip, IngredientWithPrice } from '$lib/types';
@@ -17,14 +17,82 @@
     cancel: void;
   }>();
 
+  // Cache key for localStorage - use recipeId or 'new-recipe' for new recipes
+  // For new recipes (no _id), always use 'new-recipe' as the key to ensure consistency across page refreshes
+  const getCacheKey = () => {
+    // Check if this is a new recipe (no _id means it hasn't been saved to DB yet)
+    const isNewRecipe = !recipe._id;
+    if (isNewRecipe) {
+      return 'recipe-editor-cache-new-recipe';
+    }
+    // For existing recipes, use recipeId
+    const recipeId = recipe.recipeId || 'new-recipe';
+    return `recipe-editor-cache-${recipeId}`;
+  };
+
+  // Load cached recipe data from localStorage
+  const loadCachedRecipe = (): Recipe | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const cached = localStorage.getItem(getCacheKey());
+      if (cached) {
+        return JSON.parse(cached) as Recipe;
+      }
+    } catch (e) {
+      console.warn('Failed to load cached recipe:', e);
+    }
+    return null;
+  };
+
+  // Save recipe to localStorage cache
+  const saveToCache = (recipeToCache: Recipe) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(getCacheKey(), JSON.stringify(recipeToCache));
+    } catch (e) {
+      console.warn('Failed to save recipe to cache:', e);
+    }
+  };
+
+  // Clear cache for this recipe
+  const clearCache = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(getCacheKey());
+    } catch (e) {
+      console.warn('Failed to clear cache:', e);
+    }
+  };
+
+  // Debounce function for auto-save
+  let autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
+  const debouncedSave = (recipeToCache: Recipe) => {
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+    autoSaveTimeout = setTimeout(() => {
+      saveToCache(recipeToCache);
+    }, 1000); // Save after 1 second of inactivity
+  };
+
+  // Try to load from cache first, otherwise use the provided recipe
+  const cachedRecipe = loadCachedRecipe();
+  const initialRecipe = cachedRecipe || recipe;
+  let wasRestoredFromCache = !!cachedRecipe;
+
   // Local state for editing - ensure recipe has all required fields
+  // Preserve recipeId from cache if available, otherwise generate one
+  // Default utkast to true for new recipes (no _id), otherwise preserve from initial recipe
   let editedRecipe: Recipe = { 
-    ...recipe,
-    steps: recipe.steps || [],
-    recipeIngredients: recipe.recipeIngredients || [],
-    portions: recipe.portions || 1,
-    recipeId: recipe.recipeId || nanoid(),
-    tips: recipe.tips?.map((tip, idx) => ({
+    ...initialRecipe,
+    steps: initialRecipe.steps || [],
+    recipeIngredients: initialRecipe.recipeIngredients || [],
+    portions: initialRecipe.portions || 1,
+    // Preserve recipeId from cache, or from recipe, or generate new one
+    recipeId: cachedRecipe?.recipeId || initialRecipe.recipeId || nanoid(),
+    // Default to draft (utkast: true) for new recipes, otherwise preserve existing value
+    utkast: initialRecipe._id ? (initialRecipe.utkast ?? false) : (cachedRecipe?.utkast ?? true),
+    tips: initialRecipe.tips?.map((tip, idx) => ({
       ...tip,
       _tempId: `tip-${idx}-${tip.associatedWithStepNr}`
     })) || []
@@ -357,12 +425,31 @@
       })
     };
     
+    // Clear cache on successful save
+    clearCache();
+    
     dispatch('save', cleanedRecipe);
   }
 
   function handleCancel() {
+    // Optionally clear cache on cancel, or keep it for recovery
+    // For now, we'll keep it so users can recover their work
     dispatch('cancel');
   }
+
+  // Auto-save to cache whenever editedRecipe changes
+  $: {
+    if (editedRecipe && typeof window !== 'undefined') {
+      debouncedSave(editedRecipe);
+    }
+  }
+
+  // Cleanup on component destroy
+  onDestroy(() => {
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+  });
 
   function handleImageChange(event: CustomEvent<string | undefined>) {
     editedRecipe.recipeImage = event.detail;
@@ -370,6 +457,36 @@
 </script>
 
 <div class="w-full max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+  {#if wasRestoredFromCache}
+    <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-sm">
+      <div class="flex items-center gap-2">
+        <Info size={16} />
+        <span>Dine endringer er gjenopprettet fra cache. Du kan fortsette der du slapp.</span>
+        <button
+          type="button"
+          class="ml-auto text-blue-600 dark:text-blue-400 hover:underline"
+          on:click={() => {
+            clearCache();
+            wasRestoredFromCache = false;
+            // Reload the original recipe
+            editedRecipe = {
+              ...recipe,
+              steps: recipe.steps || [],
+              recipeIngredients: recipe.recipeIngredients || [],
+              portions: recipe.portions || 1,
+              recipeId: recipe.recipeId || nanoid(),
+              tips: recipe.tips?.map((tip, idx) => ({
+                ...tip,
+                _tempId: `tip-${idx}-${tip.associatedWithStepNr}`
+              })) || []
+            };
+          }}
+        >
+          Start på nytt
+        </button>
+      </div>
+    </div>
+  {/if}
   <!-- Header Section -->
   <div class="mb-8">
     <div class="text-center mb-6">
@@ -387,26 +504,64 @@
       />
     </div>
 
-    <div class="flex gap-4 justify-center mb-6">
-      <div>
-        <label for="recipe-prep-time" class="block text-sm font-medium dark:text-gray-300 mb-1">Forberedelsestid (min)</label>
-        <input
-          id="recipe-prep-time"
-          type="number"
-          bind:value={editedRecipe.prepTime}
-          min="0"
-          class="w-24 px-3 py-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        />
+    <div class="flex flex-wrap gap-6 mb-6">
+      <div class="flex-1 min-w-[140px]">
+        <label for="recipe-prep-time" class="flex items-center gap-2 text-sm font-medium dark:text-gray-300 mb-2">
+          <Clock size={18} class="text-gray-600 dark:text-gray-400" />
+          Forberedelsestid (min)
+        </label>
+        <div class="relative">
+          <input
+            id="recipe-prep-time"
+            type="number"
+            bind:value={editedRecipe.prepTime}
+            min="0"
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-500"
+            placeholder="0"
+          />
+          <Clock size={18} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" />
+        </div>
       </div>
-      <div>
-        <label for="recipe-portions" class="block text-sm font-medium dark:text-gray-300 mb-1">Porsjoner</label>
-        <input
-          id="recipe-portions"
-          type="number"
-          bind:value={editedRecipe.portions}
-          min="1"
-          class="w-24 px-3 py-2 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
-        />
+      <div class="flex-1 min-w-[140px]">
+        <label for="recipe-portions" class="flex items-center gap-2 text-sm font-medium dark:text-gray-300 mb-2">
+          <Users size={18} class="text-gray-600 dark:text-gray-400" />
+          Porsjoner
+        </label>
+        <div class="relative">
+          <input
+            id="recipe-portions"
+            type="number"
+            bind:value={editedRecipe.portions}
+            min="1"
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-blue-500 dark:focus:border-blue-500"
+            placeholder="1"
+          />
+          <Users size={18} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" />
+        </div>
+      </div>
+      <div class="flex-1 min-w-[180px]">
+        <div class="flex items-center gap-2 text-sm font-medium dark:text-gray-300 mb-2">
+          {#if editedRecipe.utkast}
+            <FileText size={18} class="text-yellow-600 dark:text-yellow-400" />
+          {:else}
+            <CheckCircle size={18} class="text-green-600 dark:text-green-400" />
+          {/if}
+          <span>Publiseringsstatus</span>
+        </div>
+        <label for="recipe-utkast-toggle" class="relative inline-flex items-center cursor-pointer">
+          <input
+            id="recipe-utkast-toggle"
+            type="checkbox"
+            checked={!editedRecipe.utkast}
+            on:change={(e) => editedRecipe.utkast = !e.currentTarget.checked}
+            class="sr-only peer"
+            aria-label="Toggle draft status"
+          />
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500 dark:peer-checked:bg-green-600"></div>
+          <span class="ml-3 text-sm font-medium dark:text-gray-300">
+            {editedRecipe.utkast ? 'Utkast' : 'Publisert'}
+          </span>
+        </label>
       </div>
     </div>
 
@@ -779,7 +934,7 @@
     <div 
       class="relative bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl"
     >
-      <h3 id="tip-modal-title" class="text-xl font-bold mb-4 dark:text-white">Legg til tip for steg {newTipStepNr}</h3>
+      <h3 id="tip-modal-title" class="text-xl font-bold mb-4 dark:text-white">Suppler steg {newTipStepNr} med ekstra info</h3>
       <div class="space-y-4">
         <div>
           <label for="tip-type-add" class="block text-sm font-medium dark:text-gray-300 mb-1">Type</label>

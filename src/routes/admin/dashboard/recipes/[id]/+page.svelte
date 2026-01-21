@@ -1,5 +1,6 @@
 <script lang="ts">
   import RecipeEditor from '$lib/components/ui/RecipeEditor.svelte';
+  import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
   import { goto } from '$app/navigation';
   import toast from 'svelte-french-toast';
   import type { Recipe, IngredientWithPrice } from '$lib/types';
@@ -41,6 +42,15 @@
       });
       
       if (res.ok) {
+        // Clear cache after successful save
+        if (typeof window !== 'undefined' && recipe.recipeId) {
+          try {
+            localStorage.removeItem(`recipe-editor-cache-${recipe.recipeId}`);
+          } catch (e) {
+            console.warn('Failed to clear cache:', e);
+          }
+        }
+        
         toast.success(`Oppskrift oppdatert: ${updated.title}`);
         // Reload the page to get fresh data
         window.location.reload();
@@ -70,6 +80,15 @@
 </script>
 
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-8 pt-20">
+  <div class="mb-4">
+    <Breadcrumb 
+      items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Oppskrifter', href: '/admin/dashboard' },
+        { label: recipe?.title || 'Rediger oppskrift' }
+      ]} 
+    />
+  </div>
   <div class="mb-4 flex justify-between items-center">
     <h2 class="text-2xl font-bold dark:text-white">Rediger oppskrift</h2>
     <div class="flex gap-4 items-center">

@@ -245,6 +245,7 @@
                 </div>
             </TableHeadCell>
             {#if showAdminActions}
+                <TableHeadCell class="border-0 text-center">Status</TableHeadCell>
                 <TableHeadCell class="border-0 text-center">Handlinger</TableHeadCell>
             {/if}
         </TableHead>
@@ -287,6 +288,11 @@
                     </TableBodyCell>
                     {#if showAdminActions}
                         <TableBodyCell class="text-center border-0">
+                            <span class={recipe.utkast ? "px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" : "px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"}>
+                                {recipe.utkast ? 'Utkast 📝' : 'Publisert ✅'}
+                            </span>
+                        </TableBodyCell>
+                        <TableBodyCell class="text-center border-0">
                             <div class="flex gap-2 justify-center">
                                 <button
                                     class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm dark:bg-blue-900 transition-colors"
@@ -294,6 +300,26 @@
                                     title="Rediger oppskrift"
                                 >
                                     ✍️
+                                </button>
+                                <button
+                                    class={recipe.utkast ? "bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm dark:bg-green-900 transition-colors" : "bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm dark:bg-yellow-900 transition-colors"}
+                                    on:click={async () => {
+                                        try {
+                                            const response = await fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
+                                                method: 'PATCH',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ toggleUtkast: !recipe.utkast })
+                                            });
+                                            if (response.ok) {
+                                                dispatch('refresh');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error toggling draft status:', error);
+                                        }
+                                    }}
+                                    title={recipe.utkast ? "Publiser oppskrift" : "Sett som utkast"}
+                                >
+                                    {recipe.utkast ? "✅" : "📝"}
                                 </button>
                                 <button
                                     class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm dark:bg-red-900 transition-colors"

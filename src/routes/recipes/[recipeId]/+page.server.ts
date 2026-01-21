@@ -8,10 +8,10 @@ export const load = async ({ params }: { params: { recipeId: string } }): Promis
 		const URLparameter = params.recipeId;
 
 		// Use the `db` object to perform database operations
-		// Query the recipe DB
+		// Query the recipe DB (exclude drafts - only show published recipes to public)
 		const recipeData = await db
 			.collection("recipes")
-			.findOne({ title: URLparameter }) as unknown as Recipe | null;
+			.findOne({ title: URLparameter, utkast: { $ne: true } }) as unknown as Recipe | null;
 
 		if (!recipeData) {
 			throw new Error(`Recipe not found: ${URLparameter}`);

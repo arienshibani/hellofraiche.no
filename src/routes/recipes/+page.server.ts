@@ -14,8 +14,8 @@ export const load = async (): Promise<RecipesPageData> => {
 	try {
 		const db = await getDatabase();
 
-		// Fetch all recipes
-		const recipes = await db.collection('recipes').find({}).toArray() as unknown as Recipe[];
+		// Fetch all recipes (exclude drafts - only show published recipes)
+		const recipes = await db.collection('recipes').find({ utkast: { $ne: true } }).toArray() as unknown as Recipe[];
 
 		// Get all unique ingredient names from all recipes
 		const allIngredientNames = new Set<string>();

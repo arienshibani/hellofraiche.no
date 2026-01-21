@@ -13,8 +13,8 @@ export type HomePageData = {
 export const load = async (): Promise<HomePageData> => {
 	try {
 		const db = await getDatabase();
-		// Fetch recipes
-		const recipes = await db.collection("recipes").find({}).toArray() as unknown as Recipe[];
+		// Fetch recipes (exclude drafts - only show published recipes)
+		const recipes = await db.collection("recipes").find({ utkast: { $ne: true } }).toArray() as unknown as Recipe[];
 		// Shuffle recipes
 		for (let i = recipes.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));

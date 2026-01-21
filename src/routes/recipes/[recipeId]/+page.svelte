@@ -11,6 +11,7 @@
     import NutritionTable from "$lib/components/ui/NutritionTable.svelte";
     import { Alert } from "flowbite-svelte";
     import { Info, AlertTriangle, Lightbulb } from "lucide-svelte";
+    import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
     import type { RecipePageData, RecipeTip, RecipeIngredient, IngredientWithPrice } from "$lib/types";
 
     // Load data from +page.server.ts
@@ -160,7 +161,16 @@
 </svelte:head>
 
 <main>
-    <div class="dark:bg-gray-900">
+  <div class="dark:bg-gray-900">
+    <div class="mb-4 pt-8 px-4">
+      <Breadcrumb 
+        items={[
+          { label: 'Hjem', href: '/' },
+          { label: 'Oppskrifter', href: '/recipes' },
+          { label: recipe.title }
+        ]} 
+      />
+    </div>
         <h1 class="text-4xl text-center pb-5 pt-36 font-extrabold dark:text-white">{recipe.title}</h1>
         <h1 class="text-2xl text-center smallerTextOnSmallScreens dark:text-gray-300">
             {recipe.subtitle}

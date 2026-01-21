@@ -29,10 +29,11 @@ export const load = async (): Promise<MealPlansPageData> => {
 			}
 		});
 
-		// Fetch all recipes that are used in meal plans
+		// Fetch all recipes that are used in meal plans (exclude drafts)
 		const recipes = allRecipeTitles.size > 0
 			? await db.collection('recipes').find({
-				title: { $in: Array.from(allRecipeTitles) }
+				title: { $in: Array.from(allRecipeTitles) },
+				utkast: { $ne: true }
 			}).toArray() as unknown as Recipe[]
 			: [];
 

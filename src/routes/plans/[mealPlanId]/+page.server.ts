@@ -27,11 +27,12 @@ export const load = async ({ params }: { params: { mealPlanId: string } }): Prom
 			throw new Error(`Meal plan not found: ${URLparameters}`);
 		}
 
-		// Fetch all recipes for this meal plan
+		// Fetch all recipes for this meal plan (exclude drafts)
 		const recipeTitles = mealPlanData.recipes?.map((recipe: MealPlanRecipe) => recipe.title).filter((title): title is string => title !== undefined) || [];
 		const recipes = recipeTitles.length > 0
 			? await db.collection('recipes').find({
-				title: { $in: recipeTitles }
+				title: { $in: recipeTitles },
+				utkast: { $ne: true }
 			}).toArray() as unknown as Recipe[]
 			: [];
 

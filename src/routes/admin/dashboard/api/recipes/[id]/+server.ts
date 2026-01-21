@@ -50,7 +50,8 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 type PatchData = 
 	| { markBulk: string }
-	| { updateEAN: { name: string; ean: string } };
+	| { updateEAN: { name: string; ean: string } }
+	| { toggleUtkast: boolean };
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const db = await getDatabase();
@@ -95,6 +96,17 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 				return new Response(JSON.stringify({ success: true }), { status: 200 });
 			} else {
 				return new Response(JSON.stringify({ error: 'Recipe or ingredient not found' }), { status: 404 });
+			}
+		} else if ('toggleUtkast' in patchData) {
+			// Toggle draft status
+			const result = await db.collection('recipes').updateOne(
+				{ _id: new ObjectId(id) },
+				{ $set: { utkast: patchData.toggleUtkast } }
+			);
+			if (result.matchedCount === 1) {
+				return new Response(JSON.stringify({ success: true }), { status: 200 });
+			} else {
+				return new Response(JSON.stringify({ error: 'Recipe not found' }), { status: 404 });
 			}
 		} else {
 			return new Response(JSON.stringify({ error: 'Invalid patch operation' }), { status: 400 });

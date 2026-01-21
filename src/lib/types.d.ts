@@ -74,6 +74,7 @@ export type Recipe = {
     recipeIngredients: RecipeIngredient[]; // List of ingredients in the recipe
     recipeId: string; // Unique identifier for the recipe
     mealPlanId?: string; // Optional identifier for the meal plan this recipe belongs to
+    utkast?: boolean; // Draft mode - if true, recipe is not shown on public pages (default: true for new recipes)
 };
 
 // MealPlan recipe reference (used in mealPlan.recipes array)

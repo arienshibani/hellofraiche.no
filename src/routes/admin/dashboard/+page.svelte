@@ -9,6 +9,7 @@
   import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
   import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
   import RecipeEditor from '$lib/components/ui/RecipeEditor.svelte';
+  import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
   import { validateEAN } from '$lib/util/validateEAN';
   import type { Recipe, IngredientWithPrice } from '$lib/types';
 
@@ -499,6 +500,13 @@
 </script>
 
   <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
+    <div class="mb-4 pt-8">
+      <Breadcrumb 
+        items={[
+          { label: 'Admin', href: '/admin/dashboard' }
+        ]} 
+      />
+    </div>
     <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
       <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
     </div>
@@ -519,7 +527,7 @@
             <div class="flex items-center mb-4 justify-between flex-row-reverse">
               <button
                 class="flex items-center gap-2 border border-gray-300 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-900 dark:border-blue-400"
-                on:click={openCreateModal}
+                on:click={() => goto('/admin/dashboard/recipes/new')}
                 aria-label="Add new recipe"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
