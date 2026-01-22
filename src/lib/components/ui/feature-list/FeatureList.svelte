@@ -8,14 +8,17 @@
   {#if title}
     <div class="text-center mb-12 max-w-3xl mx-auto">
       <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
-        <span class="bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-400 dark:to-green-400 bg-clip-text text-transparent">
-          Stedet for digg, enkel og smart middagsplanlegging
+        <span class="">
+          Lag din egen
+        </span>
+        <br />
+        <span class="bg-gradient-to-r from-yellow-300 to-blue-600 dark:from-blue-600 dark:to-green-400 bg-clip-text text-transparent font-bold">
+          Middagsplan
         </span>
       </h1>
-      <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-medium">
-        Haugevis av oppskrifter og ukemenyer med <span class="font-bold "> prisoversikt</span>
-      </p>
+
     </div>
+    <hr>
   {/if}
 
   <div class="dark:text-gray-200 w-full">

@@ -1,130 +1,117 @@
 <script lang="ts">
-  export let recipe: any;
-  export let showAdminActions: boolean = false;
-  export let coverage: number | undefined = undefined;
-  export let allIngredients: any[] = [];
-  import { createEventDispatcher } from 'svelte';
-  import AddIngredientModal from '$lib/components/ui/modals/AddIngredientModal.svelte';
-  import CoverageModal from '$lib/components/ui/modals/CoverageModal.svelte';
-  const dispatch = createEventDispatcher();
+  import { CookingPot, Clock, Users, PiggyBank } from "lucide-svelte";
+  import { getLabelConfig, getLabelColorClasses, normalizeDietaryLabel } from "$lib/util/dietaryLabels";
+  import type { Recipe } from "$lib/types";
 
-  $: coverageColor = coverage === undefined
-    ? ''
-    : coverage >= 90
-      ? 'text-green-600 dark:text-green-400'
-      : coverage >= 50
-        ? 'text-orange-500 dark:text-orange-400'
-        : 'text-red-600 dark:text-red-400';
+  export let recipe: Recipe & { estimatedPrice?: number };
+  export let className: string = "";
+  export let isDragging: boolean = false;
+  export let onNavigate: ((title: string) => void) | null = null;
 
-  let showCoverageModal = false;
-  let showAddModal = false;
-  let addName = '';
-  let addEAN = '';
-  let addError = '';
+  $: pricePerPortion = recipe.portions && recipe.portions > 0
+    ? (recipe.estimatedPrice || 0) / recipe.portions
+    : (recipe.estimatedPrice || 0);
 
-  $: filteredIngredients = recipe.recipeIngredients
-    ? recipe.recipeIngredients.filter((ri: any) => !ri.isBulkItem)
-    : [];
-  $: missingIngredients = filteredIngredients
-    ? filteredIngredients.filter((ri: any) => !allIngredients.some(ai => ai.name === ri.name))
-    : [];
-
-  function openCoverageModal() {
-    showCoverageModal = true;
-  }
-  function closeCoverageModal() {
-    showCoverageModal = false;
-  }
-  function openAddModal(name: string) {
-    addName = name;
-    addEAN = '';
-    addError = '';
-    showAddModal = true;
-  }
-  function closeAddModal() {
-    showAddModal = false;
-  }
-  function handleAddIngredient({ detail }: { detail: { name: string; ean: string } }) {
-    if (!detail.name || !detail.ean) {
-      addError = 'Navn og EAN er påkrevd';
-      return;
+  const handleClick = () => {
+    if (!isDragging && onNavigate) {
+      onNavigate(recipe.title);
     }
-    addError = '';
-    dispatch('addIngredient', { name: detail.name, ean: detail.ean });
-
-    // Also update the recipe's ingredient with the EAN
-    fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        updateEAN: {
-          name: detail.name,
-          ean: detail.ean
-        }
-      })
-    }).then(() => {
-      // Refresh to show updated recipe with EAN
-      dispatch('refresh');
-    });
-
-    // Don't close modal, let parent update allIngredients and thus missingIngredients
-  }
-  function handleCoverageAdd({ detail }: { detail: { name: string } }) {
-    openAddModal(detail.name);
-  }
-
-  async function handleCoverageAddBulk({ detail }: { detail: { name: string } }) {
-    try {
-      // PATCH the recipe to set isBulkItem: true for the ingredient with this name
-      const response = await fetch(`/admin/dashboard/api/recipes/${recipe._id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markBulk: detail.name })
-      });
-
-      if (response.ok) {
-        // Successfully marked as bulk, refresh the recipe data
-        dispatch('refresh');
-        closeCoverageModal();
-      } else {
-        console.error('Failed to mark ingredient as bulk');
-      }
-    } catch (error) {
-      console.error('Error marking ingredient as bulk:', error);
-    }
-  }
+  };
 </script>
 
-<div class="bg-white dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition-shadow p-4 flex items-center justify-between cursor-pointer group">
-  <div>
-    <div class="font-bold text-lg group-hover:text-blue-700 transition-colors dark:text-white">{recipe.title}</div>
-    <div class="text-gray-600 dark:text-gray-300">{recipe.subtitle}</div>
+<a
+  href="/recipes/{encodeURIComponent(recipe.title)}"
+  class="group overflow-hidden rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col relative hover:shadow-lg transition-all duration-200 select-none {className}"
+  style="user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;"
+  on:click|preventDefault={handleClick}
+>
+  <!-- Recipe Image -->
+  <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
+    {#if recipe.recipeImage}
+      <img
+        src={recipe.recipeImage}
+        alt={recipe.title}
+        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        style="-webkit-user-drag: none; pointer-events: none;"
+        draggable="false"
+        loading="lazy"
+      />
+    {:else}
+      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800">
+        <CookingPot size={32} class="text-gray-400 dark:text-gray-500" />
+      </div>
+    {/if}
+
+    <!-- Dietary Labels Overlay -->
+    {#if recipe.dietaryLabels && recipe.dietaryLabels.length > 0}
+      <div class="absolute left-2 top-2 flex flex-wrap gap-1 max-w-[70%]">
+        {#each recipe.dietaryLabels.slice(0, 2) as label}
+          {@const config = getLabelConfig(label)}
+          {@const Icon = config?.icon}
+          <span
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(label, true)}"
+          >
+            {#if Icon}
+              <Icon size={12} />
+            {/if}
+            <span>{normalizeDietaryLabel(label)}</span>
+          </span>
+        {/each}
+        {#if recipe.dietaryLabels.length > 2}
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300">
+            +{recipe.dietaryLabels.length - 2}
+          </span>
+        {/if}
+      </div>
+    {/if}
   </div>
-  {#if showAdminActions}
-    <div class="flex gap-2 items-center">
-      {#if coverage !== undefined}
-        <button type="button" class={`text-xs font-semibold ${coverageColor} cursor-pointer bg-transparent border-0 p-0`} on:click={openCoverageModal}>{coverage}% Ingredient index</button>
+
+  <!-- Recipe Content -->
+  <div class="flex flex-col flex-grow p-3 sm:p-4">
+    <h3 class="font-semibold text-base sm:text-lg leading-tight text-gray-900 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+      {recipe.title}
+    </h3>
+
+    {#if recipe.subtitle}
+      <p class="hidden sm:block text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-1">
+        {recipe.subtitle}
+      </p>
+    {/if}
+
+    <!-- Recipe Info -->
+    <div class="mt-auto flex flex-col gap-1.5 pt-2 sm:pt-3 border-t border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between text-xs sm:text-sm">
+
+
+        {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
+        <div class="flex items-center gap-1 text-gray-900 dark:text-white text-sm sm:text-base">
+          <PiggyBank size={14} class="text-gray-700 dark:text-gray-300" />
+          <span class="font-semibold">{pricePerPortion.toFixed(2)} kr</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
+        </div>
+      {:else}
+        <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs sm:text-sm">
+          <PiggyBank size={14} />
+          <span>Pris ikke tilgjengelig</span>
+        </div>
       {/if}
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded dark:bg-blue-900" on:click={() => dispatch('edit', recipe)}>Rediger Oppskrift ✍️</button>
-      <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded dark:bg-red-900" on:click={() => dispatch('delete', recipe)}>Slett Oppskrift 🗑️</button>
+
+      {#if recipe.prepTime && recipe.prepTime > 0}
+      <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+        <Clock size={14} class="text-gray-500 dark:text-gray-400" />
+        <span class="font-medium">{recipe.prepTime} min</span>
+      </div>
+    {:else}
+      <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+        <Clock size={14} />
+        <span>-</span>
+      </div>
+    {/if}
+      </div>
+
+      
+
+     
     </div>
-  {/if}
-</div>
-
-<CoverageModal
-  open={showCoverageModal}
-  recipeTitle={recipe.title}
-  missingIngredients={missingIngredients}
-  on:close={closeCoverageModal}
-  on:add={handleCoverageAdd}
-  on:addBulk={handleCoverageAddBulk}
-/>
-
-<AddIngredientModal
-  name={addName}
-  ean={addEAN}
-  error={addError}
-  open={showAddModal}
-  on:save={handleAddIngredient}
-  on:close={closeAddModal}
-/>
+  </div>
+</a>

@@ -10,15 +10,25 @@ export type DietaryLabelConfig = {
 
 export const PREDEFINED_DIETARY_LABELS: DietaryLabelConfig[] = [
     { key: 'vegan', label: 'Vegansk', icon: Vegan, color: 'green' },
-    { key: 'vegetarian', label: 'Vegetarisk', icon: Leaf, color: 'yellow' },
+    { key: 'vegetarian', label: 'Vegetar', icon: Leaf, color: 'green' },
     { key: 'glutenFree', label: 'Glutenfri', icon: WheatOff, color: 'blue' },
     { key: 'dairyFree', label: 'Melkefri', icon: MilkOff, color: 'purple' },
     { key: 'pescetarian', label: 'Pesci', icon: Fish, color: 'blue' },
 ];
 
+const DIETARY_LABEL_ALIASES: Record<string, string> = {
+    Vegetarisk: 'Vegetar',
+    vegetarian: 'Vegetar'
+};
+
 // Helper function to get label config by label text
 export const getLabelConfig = (labelText: string): DietaryLabelConfig | null => {
-    return PREDEFINED_DIETARY_LABELS.find(config => config.label === labelText) || null;
+    const normalizedLabel = DIETARY_LABEL_ALIASES[labelText] || labelText;
+    return PREDEFINED_DIETARY_LABELS.find(config => config.label === normalizedLabel) || null;
+};
+
+export const normalizeDietaryLabel = (labelText: string): string => {
+    return DIETARY_LABEL_ALIASES[labelText] || labelText;
 };
 
 // Helper function to get color classes for a label
