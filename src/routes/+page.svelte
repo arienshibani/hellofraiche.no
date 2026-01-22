@@ -99,7 +99,7 @@
     />
 
     <p class="text-gray-600 dark:text-gray-400 text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
-      Bestil alt du trenger direkte fra din dagligvare! Oppskriftene finner du her.   
+      Bestil alt du trenger direkte fra din dagligvare. Oppskriftene fikser vi.   
     </p>
 
     <form class="mt-6 max-w-2xl mx-auto" on:submit={handleHomeSearchSubmit}>

@@ -46,15 +46,16 @@
     {#if recipe.dietaryLabels && recipe.dietaryLabels.length > 0}
       <div class="absolute left-2 top-2 flex flex-wrap gap-1 max-w-[70%]">
         {#each recipe.dietaryLabels.slice(0, 2) as label}
-          {@const config = getLabelConfig(label)}
+          {@const normalizedLabel = normalizeDietaryLabel(label)}
+          {@const config = getLabelConfig(normalizedLabel)}
           {@const Icon = config?.icon}
           <span
-            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(label, true)}"
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(normalizedLabel, true)}"
           >
             {#if Icon}
               <Icon size={12} />
             {/if}
-            <span>{normalizeDietaryLabel(label)}</span>
+            <span>{normalizedLabel}</span>
           </span>
         {/each}
         {#if recipe.dietaryLabels.length > 2}

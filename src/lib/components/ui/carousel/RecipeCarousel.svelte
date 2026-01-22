@@ -199,7 +199,8 @@
   @media (min-width: 1280px) {
     /** for desktop */
     :global(.embla__slide) {
-      flex-basis: 20%; /* Increased from 20% to make cards ~3% wider */
+      flex-basis: 20%;
+      max-width: 320px; /* Limit card size on very wide screens */
     }
   }
 
