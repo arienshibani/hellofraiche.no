@@ -18,10 +18,47 @@
   import { Toaster } from 'svelte-french-toast';
   import ClickSpark from "$lib/components/ui/click-spark/ClickSpark.svelte";
   import { goto } from '$app/navigation';
+  import { onMount, onDestroy } from 'svelte';
 
   let isDark = false;
+  let navbarToggleFn: (() => void) | undefined = undefined;
+  let currentToggle: (() => void) | undefined = undefined;
+  let navbarElement: HTMLElement | null = null;
+  let menuHidden = true;
+  let currentHidden = true;
 
   injectAnalytics({ mode: dev ? 'development' : 'production' });
+
+  // Track menu state reactively
+  $: menuHidden = currentHidden;
+
+  // Handle clicks outside the menu to close it on mobile
+  function handleClickOutside(event: MouseEvent) {
+    if (!isSmallScreen() || !currentToggle || menuHidden) return;
+    
+    const target = event.target as HTMLElement;
+    // Check if click is outside the navbar element
+    if (navbarElement && !navbarElement.contains(target)) {
+      currentToggle();
+    }
+  }
+
+  onMount(() => {
+    if (typeof window !== 'undefined') {
+      document.addEventListener('click', handleClickOutside);
+    }
+  });
+
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      document.removeEventListener('click', handleClickOutside);
+    }
+  });
+
+  // Function to capture toggle function
+  function captureToggle(toggleFn: () => void) {
+    currentToggle = toggleFn;
+  }
 
 
   // On mount, set dark mode based on localStorage or system preference
@@ -64,12 +101,30 @@
   // Handler to delay navigation for ClickSpark animation
   function delayedNav(event: Event, href: string, toggle?: () => void) {
     event.preventDefault();
-    if (isSmallScreen() && toggle) toggle(); // Only collapse on small screens
+    if (isSmallScreen() && toggle) {
+      // Always close the menu on mobile when navigating
+      toggle();
+    }
     setTimeout(() => goto(href), 300);
+  }
+
+  function handleNavBrandClick(event: Event, toggle?: () => void) {
+    event.preventDefault();
+    if (isSmallScreen() && toggle) {
+      // Close menu when clicking logo on mobile
+      toggle();
+    }
+    setTimeout(() => goto('/'), 300);
   }
 
   function isSmallScreen() {
     return typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+  }
+
+  function closeMenuOnMobile() {
+    if (isSmallScreen() && currentToggle) {
+      currentToggle();
+    }
   }
 
   // Generate breadcrumb items based on current route
@@ -98,12 +153,19 @@
     }
     // Meal plans routes
     else if (path.startsWith('/plans')) {
-      items.push({ label: 'Måltidsplaner', href: '/plans' });
+      items.push({ label: 'Ukemenyer', href: '/plans' });
       // If it's a specific meal plan, add the meal plan name
       if (path !== '/plans' && path.startsWith('/plans/')) {
         const mealPlanId = path.split('/plans/')[1];
         if (mealPlanId) {
-          items.push({ label: mealPlanId });
+          // Decode URL-encoded meal plan name (handles spaces, emojis, etc.)
+          try {
+            const decodedName = decodeURIComponent(mealPlanId);
+            items.push({ label: decodedName });
+          } catch (e) {
+            // Fallback if decoding fails
+            items.push({ label: mealPlanId });
+          }
         }
       }
     }
@@ -149,53 +211,59 @@
     sparkSize={8}
     sparkRadius={20}
   >
-    <Navbar
-      let:hidden
-      let:toggle
-      style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); backdrop-filter: blur(13px); min-height: 2.5rem;"
-      class="px-2 bg-white/80 dark:bg-gray-900/80 sm:px-4 py-0.5 fixed w-full z-20 top-0 left-0 backdrop-blur-md"
+    <div 
+      class="fixed w-full z-20 top-0 left-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md" 
+      style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);"
+      bind:this={navbarElement}
     >
-      <NavBrand href="/">
-        <div class="flex items-center gap-2 ml-2">
-          <ChefHat size={24} class="text-gray-700 dark:text-gray-300" />
-          <div class="text-xl font-extrabold italic">
-            HALLO FRAICHE
+      <Navbar
+        let:hidden
+        let:toggle
+        class="px-2 sm:px-4 py-0.5"
+      >
+        {(() => { currentToggle = toggle; currentHidden = hidden; return ''; })()}
+        <NavBrand href="/" on:click={(e) => { handleNavBrandClick(e, toggle); currentToggle = toggle; }}>
+          <div class="flex items-center gap-2 ml-2">
+            <ChefHat size={24} class="text-gray-700 dark:text-gray-300" />
+            <div class="text-xl font-extrabold italic">
+              HALLO FRAICHE
+            </div>
           </div>
-        </div>
-      </NavBrand>
-      
-      <!-- Breadcrumb Navigation in center of navbar -->
-      {#if breadcrumbItems.length > 0}
-        <div class="hidden md:flex flex-1 justify-center items-center px-4">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-      {:else}
-        <div class="hidden md:flex flex-1"></div>
-      {/if}
-      
-      <NavHamburger on:click={toggle} />
-      <NavUl {hidden}>
-        <NavLi class="text-base font-semibold flex items-center gap-2" href="/plans" on:click={(e) => delayedNav(e, '/plans', toggle)}>
-          <CalendarCheck size={18} />
-          Ukemenyer
-        </NavLi>
-        <NavLi class="text-base font-semibold flex items-center gap-2" href="/recipes" on:click={(e) => delayedNav(e, '/recipes', toggle)}>
-          <CookingPot size={18} />
-          Oppskrifter
-        </NavLi>
-        <NavLi class="text-base font-semibold flex items-center gap-2" href="/info" on:click={(e) => delayedNav(e, '/info', toggle)}>
-          <Info size={18} />
-          Info
-        </NavLi>
-      </NavUl>
-    </Navbar>
+        </NavBrand>
+        
+        <div class="flex-1"></div>
+        
+        <NavHamburger on:click={() => { toggle(); currentToggle = toggle; captureToggle(toggle); }} />
+        <NavUl {hidden}>
+          <NavLi class="text-base font-semibold flex items-center gap-2" href="/plans" on:click={(e) => { delayedNav(e, '/plans', toggle); currentToggle = toggle; captureToggle(toggle); }}>
+            <CalendarCheck size={18} />
+            Ukemenyer
+          </NavLi>
+          <NavLi class="text-base font-semibold flex items-center gap-2" href="/recipes" on:click={(e) => { delayedNav(e, '/recipes', toggle); currentToggle = toggle; captureToggle(toggle); }}>
+            <CookingPot size={18} />
+            Oppskrifter
+          </NavLi>
+          <NavLi class="text-base font-semibold flex items-center gap-2" href="/info" on:click={(e) => { delayedNav(e, '/info', toggle); currentToggle = toggle; captureToggle(toggle); }}>
+            <Info size={18} />
+            Info
+          </NavLi>
+        </NavUl>
+      </Navbar>
+    </div>
 
-    <!-- Mobile breadcrumb below navbar (shown on small screens) -->
+    <!-- Breadcrumb row below navbar -->
     {#if breadcrumbItems.length > 0}
-      <div class="md:hidden pt-16 px-4 pb-4">
-        <Breadcrumb items={breadcrumbItems} />
+      <div class="fixed w-full z-10 top-10 left-0 bg-white dark:bg-gray-900 px-2 sm:px-4 pb-2 pt-0 lg:pt-8">
+        <div class="ml-2">
+          <Breadcrumb items={breadcrumbItems} onNavigate={() => { if (isSmallScreen() && currentToggle) currentToggle(); }} />
+        </div>
       </div>
     {/if}
+
+    <!-- Spacer to account for fixed navbar and breadcrumb height -->
+    <div class="w-full left-0">
+      <div class={breadcrumbItems.length > 0 ? 'h-20' : 'h-12'}></div>
+    </div>
 
     <slot />
     

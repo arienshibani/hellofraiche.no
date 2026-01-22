@@ -14,6 +14,10 @@
 
   let isDragging = false;
   let dragResetTimer: ReturnType<typeof setTimeout> | undefined;
+  let pointerStartX = 0;
+  let pointerStartY = 0;
+  let isPointerDown = false;
+  const DRAG_THRESHOLD = 5; // pixels of movement before considering it a drag
 
   const emblaOptions = {
     align: "start" as const,
@@ -22,15 +26,30 @@
     duration: 15
   };
 
-  const handlePointerDown = () => {
-    isDragging = true;
+  const handlePointerDown = (e: PointerEvent) => {
+    pointerStartX = e.clientX;
+    pointerStartY = e.clientY;
+    isPointerDown = true;
+    isDragging = false; // Start as false, only set to true if movement detected
     if (dragResetTimer) clearTimeout(dragResetTimer);
   };
 
+  const handlePointerMove = (e: PointerEvent) => {
+    if (isPointerDown && !isDragging) {
+      const deltaX = Math.abs(e.clientX - pointerStartX);
+      const deltaY = Math.abs(e.clientY - pointerStartY);
+      // Only set dragging if movement exceeds threshold
+      if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+        isDragging = true;
+      }
+    }
+  };
+
   const handlePointerUp = () => {
+    isPointerDown = false;
     dragResetTimer = setTimeout(() => {
       isDragging = false;
-    }, 80);
+    }, 50); // Reduced delay for better responsiveness
   };
 
   const handleNavigate = (recipeTitle: string) => {
@@ -60,6 +79,7 @@
       class="embla px-4 sm:px-6 lg:px-8 pb-4"
       use:emblaCarouselSvelte={{ options: emblaOptions, plugins: [] }}
       on:pointerdown={handlePointerDown}
+      on:pointermove={handlePointerMove}
       on:pointerup={handlePointerUp}
       on:pointercancel={handlePointerUp}
     >
@@ -90,22 +110,26 @@
   }
 
   :global(.embla__slide) {
-    flex: 0 0 50%;
+    flex: 0 0 60%;
   }
 
   @media (min-width: 640px) {
+    /** for tablet */
     :global(.embla__slide) {
-      flex-basis: 50%;
+      flex-basis: 40%;
     }
   }
 
   @media (min-width: 1024px) {
+    /** for laptop */
     :global(.embla__slide) {
       flex-basis: 33.333%;
     }
   }
 
+  
   @media (min-width: 1280px) {
+    /** for desktop */
     :global(.embla__slide) {
       flex-basis: 20%;
     }

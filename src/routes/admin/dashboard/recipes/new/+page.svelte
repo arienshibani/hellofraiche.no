@@ -1,6 +1,5 @@
 <script lang="ts">
   import RecipeEditor from '$lib/components/ui/RecipeEditor.svelte';
-  import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
   import { goto } from '$app/navigation';
   import toast from 'svelte-french-toast';
   import { nanoid } from 'nanoid';
@@ -112,17 +111,8 @@
 </script>
 
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-8 pt-20">
-  <div class="mb-4">
-    <Breadcrumb 
-      items={[
-        { label: 'Admin', href: '/admin/dashboard' },
-        { label: 'Oppskrifter', href: '/admin/dashboard' },
-        { label: 'Ny oppskrift' }
-      ]} 
-    />
-  </div>
   <div class="mb-4 flex justify-between items-center">
-    <h2 class="text-2xl font-bold dark:text-white">Ny oppskrift</h2>
+    <h2 class="text-2xl font-bold dark:text-white"></h2>
     <button
       class="text-blue-600 dark:text-blue-400 underline text-sm"
       on:click={toggleEditorMode}

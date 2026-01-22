@@ -68,9 +68,11 @@
 
   <!-- Recipe Content -->
   <div class="flex flex-col flex-grow p-3 sm:p-4">
-    <h3 class="font-semibold text-base sm:text-lg leading-tight text-gray-900 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-      {recipe.title}
-    </h3>
+    <div class="relative mb-1 sm:mb-2">
+      <h3 class="font-semibold text-base sm:text-lg leading-tight text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors recipe-title-fade sm:line-clamp-2">
+        {recipe.title}
+      </h3>
+    </div>
 
     {#if recipe.subtitle}
       <p class="hidden sm:block text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-1">
@@ -113,3 +115,22 @@
     </div>
   </div>
 </a>
+
+<style>
+  :global(.recipe-title-fade) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    -webkit-mask-image: linear-gradient(to right, black 70%, transparent 100%);
+    mask-image: linear-gradient(to right, black 70%, transparent 100%);
+  }
+
+  @media (min-width: 640px) {
+    :global(.recipe-title-fade) {
+      -webkit-mask-image: none;
+      mask-image: none;
+      white-space: normal;
+      overflow: visible;
+    }
+  }
+</style>

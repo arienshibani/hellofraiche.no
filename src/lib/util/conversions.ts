@@ -125,6 +125,7 @@ const PACKAGE_SIZES: Record<string, number> = {
   'Chili': 15,
   'Ingefær': 20,
   'Kurkuma': 5,
+  'Nakkekoteletter': 225,
 
   // Norwegian-specific units
   'Hvitløk': 50,      // båt (clove) - average weight per clove
