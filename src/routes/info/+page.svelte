@@ -16,7 +16,7 @@
 
 <h1 class="text-5xl text-center pt-24 font-bold dark:text-white flex items-center justify-center gap-3">
   <Utensils size={48} class="text-gray-700 dark:text-gray-300" />
-  Billig Mat
+  Hvordan fungerer det?
 </h1>
 
 <h1 class="text-3xl text-center p-2 pt-20 dark:text-white flex items-center justify-center gap-2">

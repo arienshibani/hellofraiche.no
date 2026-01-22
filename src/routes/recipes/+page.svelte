@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
-  import { CookingPot, PiggyBank, ArrowUp, ArrowDown, Clock, X, Filter, Users } from "lucide-svelte";
+  import { CookingPot, PiggyBank, ArrowUp, ArrowDown, Clock, X, Filter, Users, RotateCcw, Type } from "lucide-svelte";
   import { getLabelConfig, getLabelColorClasses, PREDEFINED_DIETARY_LABELS } from '$lib/util/dietaryLabels';
   import type { Recipe } from '$lib/types';
 
@@ -154,13 +154,13 @@
         if (!matchesSearch) return false;
       }
 
-      // Dietary labels filter
+      // Dietary labels filter - OR logic (union): show recipes with ANY selected label
       if (selectedDietaryLabels.length > 0) {
         const recipeLabels = recipe.dietaryLabels || [];
-        const hasAllSelectedLabels = selectedDietaryLabels.every(label => 
+        const hasAnySelectedLabel = selectedDietaryLabels.some(label => 
           recipeLabels.includes(label)
         );
-        if (!hasAllSelectedLabels) return false;
+        if (!hasAnySelectedLabel) return false;
       }
 
       // Prep time filter
@@ -260,6 +260,70 @@
     { label: 'Middels (under 30 min)', value: 30 },
     { label: 'Lengre (under 60 min)', value: 60 }
   ];
+
+  // Count recipes matching a specific dietary label (considering current search and other filters)
+  function countRecipesWithLabel(label: string): number {
+    return recipes.filter(recipe => {
+      // Text search filter
+      const term = search.trim().toLowerCase();
+      if (term) {
+        const matchesSearch = (
+          recipe.title.toLowerCase().includes(term) ||
+          recipe.subtitle?.toLowerCase().includes(term) ||
+          recipe.recipeIngredients?.some(ing => ing.name.toLowerCase().includes(term))
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // Check if recipe has this label
+      const recipeLabels = recipe.dietaryLabels || [];
+      if (!recipeLabels.includes(label)) return false;
+
+      // Prep time filter
+      if (maxPrepTime !== null) {
+        const prepTime = recipe.prepTime || 0;
+        if (prepTime > maxPrepTime) return false;
+      }
+
+      return true;
+    }).length;
+  }
+
+  // Count recipes matching a specific prep time filter (considering current search and other filters)
+  function countRecipesWithPrepTime(prepTimeValue: number | null): number {
+    return recipes.filter(recipe => {
+      // Text search filter
+      const term = search.trim().toLowerCase();
+      if (term) {
+        const matchesSearch = (
+          recipe.title.toLowerCase().includes(term) ||
+          recipe.subtitle?.toLowerCase().includes(term) ||
+          recipe.recipeIngredients?.some(ing => ing.name.toLowerCase().includes(term))
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // Dietary labels filter - OR logic (union): show recipes with ANY selected label
+      if (selectedDietaryLabels.length > 0) {
+        const recipeLabels = recipe.dietaryLabels || [];
+        const hasAnySelectedLabel = selectedDietaryLabels.some(label => 
+          recipeLabels.includes(label)
+        );
+        if (!hasAnySelectedLabel) return false;
+      }
+
+      // Prep time filter
+      if (prepTimeValue === null) {
+        // "Alle" option - no prep time filter
+        return true;
+      } else {
+        const prepTime = recipe.prepTime || 0;
+        if (prepTime > prepTimeValue) return false;
+      }
+
+      return true;
+    }).length;
+  }
 </script>
 
 <svelte:window on:keydown={(e) => { handleShortcut(e); handleEscapeKey(e); }} />
@@ -329,17 +393,6 @@
           <Filter size={18} class="text-gray-600 dark:text-gray-400" />
           Filtre
         </h2>
-        {#if hasActiveFilters()}
-          <button
-            type="button"
-            on:click={clearAllFilters}
-            class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-            title="Nullstill alle filtre"
-          >
-            <X size={14} />
-            Nullstill
-          </button>
-        {/if}
       </div>
 
       <!-- Filter Content -->
@@ -361,6 +414,7 @@
                   <Icon size={16} />
                 {/if}
                 <span>{label}</span>
+                <span class="ml-1 text-xs opacity-75">({countRecipesWithLabel(label)})</span>
                 {#if isSelected}
                   <X size={14} />
                 {/if}
@@ -380,6 +434,7 @@
             >
               <Clock size={16} />
               Alle
+              <span class="ml-1 text-xs opacity-75">({countRecipesWithPrepTime(null)})</span>
             </button>
             {#each prepTimeOptions as option}
               {@const isSelected = maxPrepTime === option.value}
@@ -390,6 +445,7 @@
               >
                 <Clock size={16} />
                 {option.label}
+                <span class="ml-1 text-xs opacity-75">({countRecipesWithPrepTime(option.value)})</span>
               </button>
             {/each}
           </div>
@@ -401,17 +457,13 @@
           <div class="flex flex-col gap-2">
             <button
               type="button"
-              on:click={() => sortBy = 'none'}
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all text-left {sortBy === 'none' ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}"
-            >
-              Standard
-            </button>
-            <button
-              type="button"
               on:click={() => sortBy = sortBy === 'title-asc' ? 'none' : 'title-asc'}
               class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-between {sortBy === 'title-asc' ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}"
             >
-              <span>Navn</span>
+              <span class="flex items-center gap-2">
+                <Type size={14} />
+                Navn
+              </span>
               {#if sortBy === 'title-asc'}
                 <ArrowUp size={14} />
               {/if}
@@ -448,6 +500,20 @@
             </button>
           </div>
         </div>
+
+        <!-- Clear Filters Button (Desktop) -->
+        {#if hasActiveFilters()}
+          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              on:click={clearAllFilters}
+              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <RotateCcw size={16} />
+              Nullstill alle filtre
+            </button>
+          </div>
+        {/if}
       </div>
     </div>
   </aside>
@@ -514,7 +580,7 @@
     {#each filteredRecipes as recipe}
     <a 
       href="/recipes/{encodeURIComponent(recipe.title)}"
-      class="group overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-full w-full flex flex-col relative hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+      class="group overflow-hidden rounded-xl lg:rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-full w-full flex flex-col relative hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
     >
       <!-- Recipe Image -->
       <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
@@ -527,27 +593,27 @@
           />
         {:else}
           <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800">
-            <CookingPot size={32} class="sm:size-12 text-gray-400 dark:text-gray-500" />
+            <CookingPot size={32} class="lg:size-12 text-gray-400 dark:text-gray-500" />
           </div>
         {/if}
         
         <!-- Dietary Labels Overlay (top left) -->
         {#if recipe.dietaryLabels && recipe.dietaryLabels.length > 0}
-          <div class="absolute left-1.5 sm:left-3 top-1.5 sm:top-3 flex flex-wrap gap-1 max-w-[70%]">
+          <div class="absolute left-1.5 lg:left-3 top-1.5 lg:top-3 flex flex-wrap gap-1 max-w-[70%]">
             {#each recipe.dietaryLabels.slice(0, 1) as label}
               {@const config = getLabelConfig(label)}
               {@const Icon = config?.icon}
               <span
-                class="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(label, true)}"
+                class="inline-flex items-center gap-0.5 lg:gap-1 px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 {getLabelColorClasses(label, true)}"
               >
                 {#if Icon}
-                  <Icon size={10} class="sm:size-3" />
+                  <Icon size={10} class="lg:size-3" />
                 {/if}
-                <span class="hidden sm:inline">{label}</span>
+                <span class="hidden lg:inline">{label}</span>
               </span>
             {/each}
             {#if recipe.dietaryLabels.length > 1}
-              <span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300">
+              <span class="inline-flex items-center px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-medium backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300">
                 +{recipe.dietaryLabels.length - 1}
               </span>
             {/if}
@@ -556,26 +622,26 @@
       </div>
 
       <!-- Recipe Content -->
-      <div class="flex flex-col flex-grow p-2 sm:p-4">
+      <div class="flex flex-col flex-grow p-2 lg:p-4">
         <!-- Title -->
-        <h3 class="font-semibold text-sm sm:text-lg leading-tight text-gray-900 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+        <h3 class="font-semibold text-sm lg:text-lg leading-tight text-gray-900 dark:text-white mb-1 lg:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
           {recipe.title}
         </h3>
         
         <!-- Subtitle (if exists) - hidden on mobile -->
         {#if recipe.subtitle}
-          <p class="hidden sm:block text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-3 line-clamp-1">
+          <p class="hidden lg:block text-sm text-gray-600 dark:text-gray-400 mb-2 lg:mb-3 line-clamp-1">
             {recipe.subtitle}
           </p>
         {/if}
 
         <!-- Recipe Info (Prep Time, Portions, Price) -->
-        <div class="mt-auto flex flex-col gap-1.5 sm:gap-2 pt-2 sm:pt-3 border-t border-gray-200 dark:border-gray-700">
-          <div class="flex items-center justify-between text-xs sm:text-sm">
+        <div class="mt-auto flex flex-col gap-1.5 lg:gap-2 pt-2 lg:pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between text-xs lg:text-sm">
             <!-- Prep Time -->
             {#if recipe.prepTime && recipe.prepTime > 0}
               <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                <Clock size={12} class="sm:size-4 text-gray-500 dark:text-gray-400" />
+                <Clock size={12} class="lg:size-4 text-gray-500 dark:text-gray-400" />
                 <span class="font-medium">{recipe.prepTime} min</span>
               </div>
             {:else}
@@ -587,7 +653,7 @@
 
             <!-- Portions - hidden on mobile, shown on sm+ -->
             {#if recipe.portions}
-              <div class="hidden sm:flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+              <div class="hidden lg:flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                 <Users size={16} class="text-gray-500 dark:text-gray-400" />
                 <span class="font-medium">{recipe.portions} {recipe.portions === 1 ? 'porsjon' : 'porsjoner'}</span>
               </div>
@@ -598,15 +664,15 @@
           {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
             {@const pricePerPortion = recipe.portions && recipe.portions > 0 ? recipe.estimatedPrice / recipe.portions : recipe.estimatedPrice}
             <div class="flex items-center gap-1 text-gray-900 dark:text-white">
-              <PiggyBank size={12} class="sm:size-4 text-gray-700 dark:text-gray-300" />
-              <span class="font-semibold text-sm sm:text-base">{pricePerPortion.toFixed(2)} kr</span>
-              <span class="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
+              <PiggyBank size={12} class="lg:size-4 text-gray-700 dark:text-gray-300" />
+              <span class="font-semibold text-sm lg:text-base">{pricePerPortion.toFixed(2)} kr</span>
+              <span class="hidden lg:inline text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
             </div>
           {:else}
-            <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs sm:text-sm">
-              <PiggyBank size={12} class="sm:size-4" />
-              <span class="hidden sm:inline">Pris ikke tilgjengelig</span>
-              <span class="sm:hidden">-</span>
+            <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs lg:text-sm">
+              <PiggyBank size={12} class="lg:size-4" />
+              <span class="hidden lg:inline">Pris ikke tilgjengelig</span>
+              <span class="lg:hidden">-</span>
             </div>
           {/if}
         </div>
@@ -673,6 +739,7 @@
                   <Icon size={16} />
                 {/if}
                 <span>{label}</span>
+                <span class="ml-1 text-xs opacity-75">({countRecipesWithLabel(label)})</span>
                 {#if isSelected}
                   <X size={14} />
                 {/if}
@@ -692,6 +759,7 @@
             >
               <Clock size={16} />
               Alle
+              <span class="ml-1 text-xs opacity-75">({countRecipesWithPrepTime(null)})</span>
             </button>
             {#each prepTimeOptions as option}
               {@const isSelected = maxPrepTime === option.value}
@@ -702,6 +770,7 @@
               >
                 <Clock size={16} />
                 {option.label}
+                <span class="ml-1 text-xs opacity-75">({countRecipesWithPrepTime(option.value)})</span>
               </button>
             {/each}
           </div>
@@ -713,17 +782,13 @@
           <div class="flex flex-col gap-2">
             <button
               type="button"
-              on:click={() => sortBy = 'none'}
-              class="px-3 py-2 rounded-lg text-sm font-medium transition-all text-left {sortBy === 'none' ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}"
-            >
-              Standard
-            </button>
-            <button
-              type="button"
               on:click={() => sortBy = sortBy === 'title-asc' ? 'none' : 'title-asc'}
               class="px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-between {sortBy === 'title-asc' ? 'bg-blue-600 text-white dark:bg-blue-700' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}"
             >
-              <span>Navn</span>
+              <span class="flex items-center gap-2">
+                <Type size={14} />
+                Navn
+              </span>
               {#if sortBy === 'title-asc'}
                 <ArrowUp size={14} />
               {/if}
@@ -767,8 +832,9 @@
             <button
               type="button"
               on:click={() => { clearAllFilters(); drawerOpen = false; }}
-              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
             >
+              <RotateCcw size={16} />
               Nullstill alle filtre
             </button>
           </div>
