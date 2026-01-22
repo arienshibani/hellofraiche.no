@@ -38,6 +38,7 @@
 		"gsap": "^3.13.0",
 		"lucide-svelte": "^0.525.0",
 		"mongodb": "^5.8.0",
+		"motion": "^12.28.1",
 		"nanoid": "^5.1.5",
 		"ogl": "^1.0.11",
 		"saslprep": "^1.0.3",

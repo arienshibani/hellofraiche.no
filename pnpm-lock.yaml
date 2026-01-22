@@ -41,6 +41,9 @@ importers:
       mongodb:
         specifier: ^5.8.0
         version: 5.9.2
+      motion:
+        specifier: ^12.28.1
+        version: 12.28.1
       nanoid:
         specifier: ^5.1.5
         version: 5.1.6
@@ -939,6 +942,20 @@ packages:
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
+  framer-motion@12.28.1:
+    resolution: {integrity: sha512-72GkO7DS4FfcSjf26wx0v+rzkW8Fhn4Djh04aDbuEg7NYG8X8MhJZc6/5weG/YeEgIP+fCo8FS2y1HnXH8k8fQ==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -1082,6 +1099,26 @@ packages:
       mongodb-client-encryption:
         optional: true
       snappy:
+        optional: true
+
+  motion-dom@12.28.1:
+    resolution: {integrity: sha512-xqgID69syDvXwFJnUd5bW6ajGUAr/qevRoUe/EqpsXUbVIopyWrAOiwQOhpgVQD+B7Ra60zTdj5gVkmwncebMg==}
+
+  motion-utils@12.27.2:
+    resolution: {integrity: sha512-B55gcoL85Mcdt2IEStY5EEAsrMSVE2sI14xQ/uAdPL+mfQxhKKFaEag9JmfxedJOR4vZpBGoPeC/Gm13I/4g5Q==}
+
+  motion@12.28.1:
+    resolution: {integrity: sha512-qGq5+6r4IMivHbT2EUhCwxz2NgFBuba3sWDrxcHt06+nYqKMevYJiVh/N90nMRof+vIUpiq8C22ZeOXwkWWiZg==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
         optional: true
 
   mri@1.2.0:
@@ -1401,6 +1438,9 @@ packages:
 
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -2166,6 +2206,12 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
+  framer-motion@12.28.1:
+    dependencies:
+      motion-dom: 12.28.1
+      motion-utils: 12.27.2
+      tslib: 2.8.1
+
   fsevents@2.3.3:
     optional: true
 
@@ -2277,6 +2323,17 @@ snapshots:
       socks: 2.8.7
     optionalDependencies:
       '@mongodb-js/saslprep': 1.4.5
+
+  motion-dom@12.28.1:
+    dependencies:
+      motion-utils: 12.27.2
+
+  motion-utils@12.27.2: {}
+
+  motion@12.28.1:
+    dependencies:
+      framer-motion: 12.28.1
+      tslib: 2.8.1
 
   mri@1.2.0: {}
 
@@ -2610,6 +2667,8 @@ snapshots:
       punycode: 2.3.1
 
   ts-interface-checker@0.1.13: {}
+
+  tslib@2.8.1: {}
 
   typescript@5.9.3: {}
 

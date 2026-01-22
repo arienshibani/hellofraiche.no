@@ -83,11 +83,12 @@
       <div class="flex items-center justify-between text-xs sm:text-sm">
 
 
+        <!-- Price per portion -->
         {#if recipe.estimatedPrice && recipe.estimatedPrice > 0}
         <div class="flex items-center gap-1 text-gray-900 dark:text-white text-sm sm:text-base">
-          <PiggyBank size={14} class="text-gray-700 dark:text-gray-300" />
+ 
           <span class="font-semibold">{pricePerPortion.toFixed(2)} kr</span>
-          <span class="text-xs text-gray-500 dark:text-gray-400">per porsjon</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">/ Porsjon</span>
         </div>
       {:else}
         <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs sm:text-sm">
@@ -96,6 +97,7 @@
         </div>
       {/if}
 
+      <!-- Prep Time -->
       {#if recipe.prepTime && recipe.prepTime > 0}
       <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
         <Clock size={14} class="text-gray-500 dark:text-gray-400" />
@@ -108,10 +110,6 @@
       </div>
     {/if}
       </div>
-
-      
-
-     
     </div>
   </div>
 </a>
