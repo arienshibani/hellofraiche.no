@@ -2,10 +2,12 @@
   import { goto } from '$app/navigation';
 
   export let items: Array<{ label: string; href?: string }> = [];
+  export let onNavigate: (() => void) | undefined = undefined;
 
   function handleClick(item: { label: string; href?: string }, event: MouseEvent) {
     if (item.href) {
       event.preventDefault();
+      if (onNavigate) onNavigate();
       goto(item.href);
     }
   }
@@ -19,9 +21,7 @@
         <li aria-current="page">
           <div class="flex items-center space-x-1.5">
             {#if index > 0}
-              <svg class="w-3.5 h-3.5 rtl:rotate-180 text-gray-400 dark:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/>
-              </svg>
+              <span class="text-gray-400 dark:text-gray-500 mx-1">/</span>
             {/if}
             <span class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400">
               {item.label}
@@ -46,9 +46,7 @@
         <!-- Middle items -->
         <li>
           <div class="flex items-center space-x-1.5">
-            <svg class="w-3.5 h-3.5 rtl:rotate-180 text-gray-400 dark:text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/>
-            </svg>
+            <span class="text-gray-400 dark:text-gray-500 mx-1">/</span>
             <a 
               href={item.href || '#'} 
               class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"

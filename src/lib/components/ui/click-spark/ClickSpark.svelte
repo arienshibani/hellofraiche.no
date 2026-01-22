@@ -160,6 +160,17 @@
   on:mousedown={handleClick}
   on:pointerdown={handleClick}
   on:keydown={(e) => {
+    // Don't interfere with input fields, textareas, or other editable elements
+    const target = e.target as HTMLElement;
+    const isEditable = target.tagName === 'INPUT' || 
+                       target.tagName === 'TEXTAREA' || 
+                       target.isContentEditable ||
+                       target.closest('input, textarea, [contenteditable="true"]');
+    
+    if (isEditable) {
+      return; // Let the input handle the keypress normally
+    }
+    
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       // Create a synthetic MouseEvent for keyboard events

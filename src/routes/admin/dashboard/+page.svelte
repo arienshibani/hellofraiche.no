@@ -9,7 +9,6 @@
   import IngredientsAdminTable from '$lib/components/ui/IngredientsAdminTable.svelte';
   import IngredientsAlert from '$lib/components/ui/IngredientsAlert.svelte';
   import RecipeEditor from '$lib/components/ui/RecipeEditor.svelte';
-  import Breadcrumb from '$lib/components/ui/Breadcrumb.svelte';
   import { validateEAN } from '$lib/util/validateEAN';
   import type { Recipe, IngredientWithPrice } from '$lib/types';
 
@@ -500,16 +499,7 @@
 </script>
 
   <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
-    <div class="mb-4 pt-8">
-      <Breadcrumb 
-        items={[
-          { label: 'Admin', href: '/admin/dashboard' }
-        ]} 
-      />
-    </div>
-    <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
-      <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
-    </div>
+
 
     {#if isLoading}
       <!-- Loading Spinner -->
