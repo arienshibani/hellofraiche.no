@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
   import { CookingPot, PiggyBank, ArrowUp, ArrowDown, Clock, X, Filter, Users, RotateCcw, Type } from "lucide-svelte";
-  import { getLabelConfig, getLabelColorClasses, PREDEFINED_DIETARY_LABELS } from '$lib/util/dietaryLabels';
+  import { getLabelConfig, getLabelColorClasses, PREDEFINED_DIETARY_LABELS, normalizeDietaryLabel } from '$lib/util/dietaryLabels';
   import type { Recipe } from '$lib/types';
 
   export let data;
@@ -136,7 +136,7 @@
   // Get all unique dietary labels from recipes
   $: allAvailableLabels = Array.from(
     new Set(
-      recipes.flatMap(recipe => recipe.dietaryLabels || [])
+      recipes.flatMap(recipe => (recipe.dietaryLabels || []).map(label => normalizeDietaryLabel(label)))
     )
   ).sort();
 
@@ -156,8 +156,9 @@
 
       // Dietary labels filter - OR logic (union): show recipes with ANY selected label
       if (selectedDietaryLabels.length > 0) {
-        const recipeLabels = recipe.dietaryLabels || [];
-        const hasAnySelectedLabel = selectedDietaryLabels.some(label => 
+        const recipeLabels = (recipe.dietaryLabels || []).map(label => normalizeDietaryLabel(label));
+        const normalizedSelectedLabels = selectedDietaryLabels.map(label => normalizeDietaryLabel(label));
+        const hasAnySelectedLabel = normalizedSelectedLabels.some(label => 
           recipeLabels.includes(label)
         );
         if (!hasAnySelectedLabel) return false;
@@ -280,8 +281,9 @@
       }
 
       // Check if recipe has this label
-      const recipeLabels = recipe.dietaryLabels || [];
-      if (!recipeLabels.includes(label)) return false;
+      const recipeLabels = (recipe.dietaryLabels || []).map(label => normalizeDietaryLabel(label));
+      const normalizedLabel = normalizeDietaryLabel(label);
+      if (!recipeLabels.includes(normalizedLabel)) return false;
 
       // Prep time filter
       if (maxPrepTime !== null) {
@@ -309,8 +311,9 @@
 
       // Dietary labels filter - OR logic (union): show recipes with ANY selected label
       if (selectedDietaryLabels.length > 0) {
-        const recipeLabels = recipe.dietaryLabels || [];
-        const hasAnySelectedLabel = selectedDietaryLabels.some(label => 
+        const recipeLabels = (recipe.dietaryLabels || []).map(label => normalizeDietaryLabel(label));
+        const normalizedSelectedLabels = selectedDietaryLabels.map(label => normalizeDietaryLabel(label));
+        const hasAnySelectedLabel = normalizedSelectedLabels.some(label => 
           recipeLabels.includes(label)
         );
         if (!hasAnySelectedLabel) return false;
@@ -417,7 +420,7 @@
                 {#if Icon}
                   <Icon size={16} />
                 {/if}
-                <span>{label}</span>
+                <span>{normalizeDietaryLabel(label)}</span>
                 <span class="ml-1 text-xs opacity-75">({countRecipesWithLabel(label)})</span>
                 {#if isSelected}
                   <X size={14} />
@@ -742,7 +745,7 @@
                 {#if Icon}
                   <Icon size={16} />
                 {/if}
-                <span>{label}</span>
+                <span>{normalizeDietaryLabel(label)}</span>
                 <span class="ml-1 text-xs opacity-75">({countRecipesWithLabel(label)})</span>
                 {#if isSelected}
                   <X size={14} />

@@ -83,7 +83,9 @@
   <hr class="my-3 sm:my-4 border-gray-300 dark:border-gray-700 border-1 w-3/4 sm:w-1/2 mx-auto">
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
+<div class="w-full px-4 sm:px-6 pb-16 sm:pb-20">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
   {#each mealPlans as mealPlan, index}
     <!-- Recipe items -->
     <Card class="border-none shadow-none bg-transparent dark:bg-transparent" padding="sm">
@@ -110,22 +112,24 @@
         >
         </div>
         <div class="flex mt-2 sm:mt-4 space-x-3 lg:mt-6">
-          <a href="/plans/{mealPlan.name}" class="w-full sm:w-auto">
-            <button
-              class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-full sm:w-fit pr-4 pl-4 m-2 sm:m-5 hover:scale-110 transition-transform duration-300 dark:bg-gray-800 dark:text-white dark:border-white"
-            >
-              Se Ukemeny
-            </button>
+          <a 
+            href="/plans/{mealPlan.name}" 
+            class="w-full sm:w-auto inline-flex items-center justify-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-full sm:w-fit pr-4 pl-4 m-2 sm:m-5 hover:scale-110 transition-transform duration-300 dark:bg-gray-800 dark:text-white dark:border-white text-center"
+            on:click|stopPropagation
+          >
+            Se Ukemeny
           </a>
         </div>
       </div>
-    </Card>
-  {/each}
+      </Card>
+    {/each}
+    </div>
+  </div>
 </div>
 </div>
 
 <style>
-  button:hover {
+  a:hover {
     color: white;
     background-color: black;
     border-color: white;

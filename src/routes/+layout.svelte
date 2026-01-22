@@ -24,6 +24,7 @@
   let navbarToggleFn: (() => void) | undefined = undefined;
   let currentToggle: (() => void) | undefined = undefined;
   let navbarElement: HTMLElement | null = null;
+  let darkModeToggleElement: HTMLElement | null = null;
   let menuHidden = true;
   let currentHidden = true;
 
@@ -34,13 +35,38 @@
 
   // Handle clicks outside the menu to close it on mobile
   function handleClickOutside(event: MouseEvent) {
-    if (!isSmallScreen() || !currentToggle || menuHidden) return;
+    if (!isSmallScreen() || !currentToggle) return;
     
     const target = event.target as HTMLElement;
-    // Check if click is outside the navbar element
-    if (navbarElement && !navbarElement.contains(target)) {
-      currentToggle();
+    
+    // Don't do anything if clicking on:
+    // 1. The navbar itself
+    // 2. The dark mode toggle button
+    // 3. Any link (navigation) - these should never trigger menu toggle
+    // 4. Any button inside a link
+    if (navbarElement && navbarElement.contains(target)) return;
+    if (darkModeToggleElement && darkModeToggleElement.contains(target)) return;
+    
+    // Check if click is on a link or button inside a link - these should navigate, never toggle menu
+    const clickedLink = target.closest('a');
+    const clickedButton = target.closest('button');
+    
+    // If clicking on a link, never toggle menu (even if menu is open, let navigation handle it)
+    if (clickedLink) return;
+    
+    // If clicking on a button that's inside a link, also don't toggle
+    if (clickedButton && clickedButton.closest('a')) return;
+    
+    // Only handle menu closing if menu is open
+    if (menuHidden) return;
+    
+    // Allow buttons to work (except if it's the hamburger, which is handled separately)
+    if (clickedButton && clickedButton !== navbarElement?.querySelector('[aria-label*="menu"], [aria-label*="Menu"]')) {
+      return;
     }
+    
+    // Only close menu if clicking on non-interactive content
+    currentToggle();
   }
 
   onMount(() => {
@@ -85,7 +111,11 @@
     }
   }
 
-  function toggleDark() {
+  function toggleDark(event?: MouseEvent) {
+    // Stop event propagation to prevent triggering menu toggle
+    if (event) {
+      event.stopPropagation();
+    }
     isDark = !isDark;
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -269,9 +299,10 @@
     
     <!-- Dark mode toggle - fixed bottom right -->
     <button
+      bind:this={darkModeToggleElement}
       class="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       aria-label="Toggle dark mode"
-      on:click={toggleDark}
+      on:click={(e) => toggleDark(e)}
       title={isDark ? 'Bytt til lyst modus' : 'Bytt til mørk modus'}
     >
       {#if isDark}
