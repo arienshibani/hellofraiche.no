@@ -32,6 +32,8 @@
 		"@vercel/analytics": "^1.5.0",
 		"classnames": "^2.3.2",
 		"dotenv": "^17.2.3",
+		"embla-carousel-auto-scroll": "^8.6.0",
+		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-svelte": "^8.6.0",
 		"flowbite": "^1.6.5",
 		"flowbite-svelte": "^0.44.24",
