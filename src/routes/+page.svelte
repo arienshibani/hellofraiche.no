@@ -83,7 +83,7 @@
 {/if}
 {#if isLoaded}
 
-<section class="dark:bg-gray-900 bg-white relative z-10 pb-16 pt-24 mx-auto">
+<section class="dark:bg-gray-900 bg-white relative z-10 pb-16 pt-12 mx-auto">
     <!-- <FeatureList className="pointer-events-none mx-auto"
     title="Go middag! 👋"
     features={[

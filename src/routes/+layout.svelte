@@ -253,8 +253,8 @@
 
     <!-- Breadcrumb row below navbar -->
     {#if breadcrumbItems.length > 0}
-      <div class="fixed w-full z-10 top-10 left-0 bg-white dark:bg-gray-900 px-2 sm:px-4 pb-2 pt-0 lg:pt-8">
-        <div class="ml-2">
+      <div class="fixed w-full z-10 top-10 left-0 bg-white dark:bg-gray-900 px-2 sm:px-4 pb-2 pt-4 lg:pt-8">
+        <div class="flex justify-center">
           <Breadcrumb items={breadcrumbItems} onNavigate={() => { if (isSmallScreen() && currentToggle) currentToggle(); }} />
         </div>
       </div>
@@ -262,7 +262,7 @@
 
     <!-- Spacer to account for fixed navbar and breadcrumb height -->
     <div class="w-full left-0">
-      <div class={breadcrumbItems.length > 0 ? 'h-20' : 'h-12'}></div>
+      <div class={breadcrumbItems.length > 0 ? 'h-24 lg:h-28' : 'h-12'}></div>
     </div>
 
     <slot />

@@ -50,12 +50,9 @@
 </svelte:head>
 
 
-<div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+<div class="flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 pt-32">
 
-<h1 class="text-5xl text-center pt-24 pb-14 font-bold dark:text-white flex items-center justify-center gap-3">
-  <Calendar size={48} class="text-gray-700 dark:text-gray-300" />
-  Ukemenyer
-</h1>
+
 
 <!-- Search Bar #TODO: Make a functional search bar here -->
 <!-- <div class="flex justify-center p-10">
