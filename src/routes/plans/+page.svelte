@@ -50,7 +50,7 @@
 </svelte:head>
 
 
-<div class="flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 pt-32">
+<div class="flex flex-col items-center justify-center pt-4 sm:pt-8 lg:pt-12">
 
 
 
@@ -71,18 +71,30 @@
     </form>
 </div> -->
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 dark:bg-gray-900" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); justify-content: center;">
+<div class="w-full max-w-7xl mx-auto px-4 mb-4 sm:mb-6">
+  <p class="text-center text-gray-700 dark:text-gray-300 text-xl sm:text-2xl font-bold px-2">
+    Én Handleliste = 4 Måltid 🍽️
+  </p>
+  <hr class="my-3 sm:my-4 border-gray-300 dark:border-gray-700 border-0 w-3/4 sm:w-1/2 mx-auto">
+  <p class="text-center text-gray-700 dark:text-gray-300 text-xs sm:text-sm px-4">
+    Hver ukemeny inneholder fire middager, og kan tilpasses antall personer. Prisen er et estimat og baserer seg data fra Meny.
+  </p>
+  <br>
+  <hr class="my-3 sm:my-4 border-gray-300 dark:border-gray-700 border-1 w-3/4 sm:w-1/2 mx-auto">
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20">
   {#each mealPlans as mealPlan, index}
     <!-- Recipe items -->
     <Card class="border-none shadow-none bg-transparent dark:bg-transparent" padding="sm">
-      <div class="flex flex-col items-center pb-4">
-        <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white text-center">
-          {"#" + (index + 1) + " "}{mealPlan.name}
+      <div class="flex flex-col items-center pb-2 sm:pb-4">
+        <h5 class="mb-1 text-lg sm:text-xl font-medium text-gray-900 dark:text-white text-center px-2">
+          {mealPlan.name}
         </h5>
         {#if mealPlan.estimatedPrice && mealPlan.estimatedPrice > 0}
           <div class="mt-2 text-center">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Estimert pris</span>
-            <div class="text-lg font-bold text-gray-900 dark:text-white">
+            <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Estimert pris</span>
+            <div class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
               {mealPlan.estimatedPrice.toFixed(2)} kr
             </div>
             <span class="text-xs text-gray-500 dark:text-gray-400">Per person</span>
@@ -93,14 +105,14 @@
           </div>
         {/if}
         <div
-          class="w-32 h-32 rounded-full mt-4 mb-4 {getColorForMealPlan(index)} flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105"
+          class="w-24 h-24 sm:w-32 sm:h-32 rounded-full mt-3 sm:mt-4 mb-3 sm:mb-4 {getColorForMealPlan(index)} flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105"
           aria-hidden="true"
         >
         </div>
-        <div class="flex mt-4 space-x-3 lg:mt-6">
-          <a href="/plans/{mealPlan.name}">
+        <div class="flex mt-2 sm:mt-4 space-x-3 lg:mt-6">
+          <a href="/plans/{mealPlan.name}" class="w-full sm:w-auto">
             <button
-              class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-fit pr-4 pl-4 m-5 hover:scale-110 transition-transform duration-300 dark:bg-gray-800 dark:text-white dark:border-white"
+              class="items-center self-center border border-black border-r-4 border-b-4 rounded-sm h-10 w-full sm:w-fit pr-4 pl-4 m-2 sm:m-5 hover:scale-110 transition-transform duration-300 dark:bg-gray-800 dark:text-white dark:border-white"
             >
               Se Ukemeny
             </button>

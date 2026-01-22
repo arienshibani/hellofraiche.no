@@ -499,9 +499,7 @@
 </script>
 
   <div class="min-h-screen w-full bg-gray-100 dark:bg-gray-900">
-    <div class="flex items-center w-full max-w-2xl mt-8 mb-4">
-      <h2 class="text-2xl font-bold flex-1 dark:text-white">Admin Dashboard</h2>
-    </div>
+
 
     {#if isLoading}
       <!-- Loading Spinner -->

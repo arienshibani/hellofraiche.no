@@ -233,6 +233,10 @@
     return search.trim() !== '' || selectedDietaryLabels.length > 0 || maxPrepTime !== null || sortBy !== 'none';
   }
 
+  function hasActiveFiltersExcludingSort(): boolean {
+    return search.trim() !== '' || selectedDietaryLabels.length > 0 || maxPrepTime !== null;
+  }
+
   // Close drawer when clicking outside (mobile only)
   function handleDrawerBackdropClick(event: MouseEvent | KeyboardEvent) {
     const target = event.target as HTMLElement;
@@ -399,7 +403,7 @@
       <div class="space-y-6">
         <!-- Dietary Labels Filter -->
         <div>
-          <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Kostholdsmerker</h3>
+          <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Kosthold</h3>
           <div class="flex flex-wrap gap-2">
             {#each allAvailableLabels as label}
               {@const config = getLabelConfig(label)}
@@ -451,6 +455,20 @@
           </div>
         </div>
 
+        <!-- Clear Filters Button (Desktop) -->
+        {#if hasActiveFilters()}
+          <div class="pt-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              on:click={clearAllFilters}
+              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <RotateCcw size={16} />
+              Nullstill alle filtre
+            </button>
+          </div>
+        {/if}
+
         <!-- Sort Options -->
         <div>
           <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Sorter</h3>
@@ -500,20 +518,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Clear Filters Button (Desktop) -->
-        {#if hasActiveFilters()}
-          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              on:click={clearAllFilters}
-              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
-            >
-              <RotateCcw size={16} />
-              Nullstill alle filtre
-            </button>
-          </div>
-        {/if}
       </div>
     </div>
   </aside>
@@ -555,7 +559,7 @@
     <!-- Results Count -->
     <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
       Viser <span class="font-semibold">{filteredRecipes.length}</span> av <span class="font-semibold">{recipes.length}</span> oppskrifter
-      {#if hasActiveFilters()}
+      {#if hasActiveFiltersExcludingSort()}
         <span class="text-xs text-gray-500 dark:text-gray-500 ml-2">(filtrert)</span>
       {/if}
     </div>
@@ -724,7 +728,7 @@
       <div class="space-y-6">
         <!-- Dietary Labels Filter -->
         <div>
-          <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Kostholdsmerker</h3>
+          <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Kosthold</h3>
           <div class="flex flex-wrap gap-2">
             {#each allAvailableLabels as label}
               {@const config = getLabelConfig(label)}
@@ -776,6 +780,20 @@
           </div>
         </div>
 
+        <!-- Clear Filters Button (Mobile) -->
+        {#if hasActiveFilters()}
+          <div class="pt-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              on:click={() => { clearAllFilters(); drawerOpen = false; }}
+              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <RotateCcw size={16} />
+              Nullstill alle filtre
+            </button>
+          </div>
+        {/if}
+
         <!-- Sort Options -->
         <div>
           <h3 class="block text-sm font-medium dark:text-gray-300 mb-3">Sorter</h3>
@@ -825,20 +843,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Clear Filters Button (Mobile) -->
-        {#if hasActiveFilters()}
-          <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              on:click={() => { clearAllFilters(); drawerOpen = false; }}
-              class="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium flex items-center justify-center gap-2"
-            >
-              <RotateCcw size={16} />
-              Nullstill alle filtre
-            </button>
-          </div>
-        {/if}
       </div>
     </div>
   </div>
