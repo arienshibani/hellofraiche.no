@@ -119,60 +119,52 @@
 </script>
 
 <!-- Ingredients Table -->
-<div class="overflow-x-auto flex justify-center">
-    <Table class="w-full max-w-sm border-0">
-        <TableHead>
-            <TableHeadCell class="w-2/3 border-0">Ingrediens</TableHeadCell>
-            <TableHeadCell class="w-1/3 text-right border-0">Pris</TableHeadCell>
-        </TableHead>
-                <TableBody>
-            <!-- Total Price Row at Top -->
-            {#if totalRecipePrice > 0}
-                <TableBodyRow class="border-b-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
-                    <TableBodyCell class="font-bold dark:text-white border-0 text-sm">
-                        <div class="flex items-center gap-2">
-                            <span>Estimert total pris</span>
-                            <div class="relative">
-                                <button
-                                    class="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                                    on:click={() => showTooltip = !showTooltip}
-                                    on:mouseenter={() => showTooltip = true}
-                                    on:mouseleave={() => showTooltip = false}
-                                    title="Hvorfor er prisen estimert?"
-                                >
-                                    <HelpCircle class="h-4 w-4" />
-                                </button>
+<div class="flex flex-col items-center space-y-2">
+    {#if totalRecipePrice > 0}
+        <div class="">
+            <div class="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-xs px-3 py-1.5 dark:bg-gray-100 dark:text-gray-900">
+                <span class="font-medium">Estimert totalpris</span>
+                <span class="font-semibold">{totalRecipePrice.toFixed(2)} kr</span>
+                <div class="relative">
+                    <button
+                        class="inline-flex items-center text-gray-300 dark:text-gray-600 hover:text-white dark:hover:text-gray-800 transition-colors"
+                        on:click={() => showTooltip = !showTooltip}
+                        on:mouseenter={() => showTooltip = true}
+                        on:mouseleave={() => showTooltip = false}
+                        title="Hvorfor er prisen estimert?"
+                    >
+                        <HelpCircle class="h-3 w-3" />
+                    </button>
 
-                                {#if showTooltip}
-                                    <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl w-56 z-[9999] whitespace-normal">
-                                        <p class="leading-relaxed text-center">
-                                            Faktisk pris kan variere og estimeres utifra at hver ingrediens er kjøpt i den mengden som er oppgitt i oppskriften.
-                                        </p>
-                                        <button
-                                            class="absolute top-2 right-2 text-gray-400 hover:text-white text-lg"
-                                            on:click={() => showTooltip = false}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                {/if}
-                            </div>
+                    {#if showTooltip}
+                        <div
+                            class="absolute right-0 top-full mt-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-xl w-56 z-[60] whitespace-normal"
+                        >
+                            <p class="leading-relaxed text-left">
+                                Faktisk pris kan variere og estimeres utifra at hver ingrediens er kjøpt i den mengden som er oppgitt i oppskriften.
+                            </p>
+                            <button
+                                class="absolute top-1 right-2 text-gray-400 hover:text-white text-sm"
+                                on:click={() => showTooltip = false}
+                            >
+                                ×
+                            </button>
                         </div>
-                    </TableBodyCell>
-                    <TableBodyCell class="text-right border-0">
-                                           <span class="text-lg font-bold text-gray-900 dark:text-white">
-                       {totalRecipePrice.toFixed(2)} kr
-                   </span>
-                    </TableBodyCell>
-                </TableBodyRow>
-            {/if}
+                    {/if}
+                </div>
+            </div>
+        </div>
+    {/if}
 
+    <div class="overflow-x-auto flex justify-center w-full">
+        <Table class="w-full max-w-sm border-0 text-sm">
+            <TableBody>
             {#each ingredientPrices as { ingredient, price: ingredientPrice, menyProduct, isChecked }}
                 <TableBodyRow
                     class="hover:bg-gray-50 dark:hover:bg-gray-700 border-0 cursor-pointer"
                     on:click={() => toggleIngredient(ingredient)}
                 >
-                    <TableBodyCell class="font-medium dark:text-white border-0 text-sm">
+                    <TableBodyCell class="font-medium dark:text-white border-0 text-xs px-3 py-1.5">
                         <div class="flex items-center">
                             <span class="text-gray-500 dark:text-gray-400 font-normal min-w-[3rem] text-right">
                                 {formatAmount(ingredient.amount * (count / basePortions), ingredient.measurement)}
@@ -182,11 +174,11 @@
                             </span>
                         </div>
                     </TableBodyCell>
-                    <TableBodyCell class="text-right border-0">
-                        <div class="flex flex-col items-end gap-1">
+                    <TableBodyCell class="text-right border-0 px-3 py-1.5">
+                        <div class="flex flex-col items-end gap-0.5">
                             {#if ingredientPrice !== null && ingredientPrice !== undefined}
                                 <div class="flex items-center gap-1">
-                                    <span class="font-semibold text-md {isChecked ? 'line-through' : ''}">
+                                    <span class="font-semibold text-xs {isChecked ? 'line-through' : ''}">
                                         {ingredientPrice.toFixed(2)} kr
                                     </span>
                                     {#if menyProduct && menyProduct.url}
@@ -212,7 +204,7 @@
                                 {#if productPrice && productWeight}
                                     {@const unitPrice = getUnitPrice(productPrice, productWeight, ingredient.measurement, ingredient.name)}
                                     {#if unitPrice}
-                                        <span class="text-xs text-gray-500 dark:text-gray-400 {isChecked ? 'line-through' : ''} w-20 text-center">
+                                        <span class="text-[0.68rem] text-gray-500 dark:text-gray-400 {isChecked ? 'line-through' : ''} w-20 text-center">
                                             {unitPrice}
                                         </span>
                                     {/if}
@@ -226,6 +218,7 @@
                     </TableBodyCell>
                 </TableBodyRow>
             {/each}
-        </TableBody>
-    </Table>
+            </TableBody>
+        </Table>
+    </div>
 </div>

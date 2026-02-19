@@ -4,6 +4,8 @@
   import { buildVinmonopoletSearchUrl } from "$lib/util/vinmonopolet";
 
   export let winePairing: WinePairing | undefined;
+  // When true, render in a more compact, inline style that fits within a narrow column
+  export let compact: boolean = false;
 
   $: vinmonopoletUrl = buildVinmonopoletSearchUrl(winePairing);
 
@@ -30,9 +32,15 @@
 
 {#if winePairing}
   {@const config = getWinePairingConfig(winePairing)}
-  <section class="px-4 pb-16 sm:pb-24 flex justify-center">
+  <section
+    class={`${
+      compact ? "px-0 pb-6 sm:pb-8 flex justify-start" : "px-4 pb-16 sm:pb-24 flex justify-center"
+    }`}
+  >
     <div
-      class="w-full max-w-2xl rounded-2xl bg-white/90 dark:bg-gray-900/90 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/80 p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start"
+      class={`w-full ${
+        compact ? "max-w-xl" : "max-w-2xl"
+      } rounded-2xl bg-white/90 dark:bg-gray-900/90 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700/80 p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start`}
     >
       <div
         class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800"
