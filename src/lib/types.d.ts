@@ -89,6 +89,12 @@ export type RecipeTip = {
     associatedWithStepNr: number;
 };
 
+export type WinePairing = {
+    category?: "red" | "white";
+    variety?: string;
+    description?: string;
+};
+
 // Recipe type (matches the actual structure used in the codebase)
 export type Recipe = {
     _id?: string; // MongoDB document ID
@@ -104,6 +110,7 @@ export type Recipe = {
     mealPlanId?: string; // Optional identifier for the meal plan this recipe belongs to
     utkast?: boolean; // Draft mode - if true, recipe is not shown on public pages (default: true for new recipes)
     dietaryLabels?: string[]; // Array of dietary labels (e.g., "Vegansk", "Glutenfri", custom labels)
+    winePairing?: WinePairing; // Optional wine pairing suggestion
 };
 
 // MealPlan recipe reference (used in mealPlan.recipes array)

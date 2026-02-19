@@ -9,6 +9,7 @@
     import { calculateIngredientPrice } from "$lib/util/conversions";
     import IngredientsTable from "$lib/components/ui/IngredientsTable.svelte";
     import NutritionTable from "$lib/components/ui/NutritionTable.svelte";
+    import WinePairing from "$lib/components/ui/WinePairing.svelte";
     import { Alert } from "flowbite-svelte";
     import { Info, AlertTriangle, Lightbulb, Clock } from "lucide-svelte";
     import type { RecipePageData, RecipeTip, RecipeIngredient, IngredientWithPrice } from "$lib/types";
@@ -154,8 +155,6 @@
     const goToMealPlan = () => {
         goto(`/plans/${data.recipe.mealPlanId}`);
     };
-
-
 </script>
 
 <svelte:head>
@@ -268,7 +267,7 @@
         </div>
 
         <!-- Nutrition Table - Outside the flex container for proper centering -->
-        <div class="flex justify-center pb-40">
+        <div class="flex justify-center pb-8 sm:pb-12">
             <NutritionTable
                 {ingredients}
                 recipeIngredients={recipe.recipeIngredients}
@@ -276,6 +275,9 @@
                 basePortions={basePortions}
             />
         </div>
+
+        <!-- Wine pairing suggestion -->
+        <WinePairing winePairing={recipe.winePairing} />
     </div>
 </main>
 <style>

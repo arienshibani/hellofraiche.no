@@ -10,7 +10,8 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
+		"generate-wine-suggestions": "node scripts/generate-wine-pairings.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^6.3.0",
