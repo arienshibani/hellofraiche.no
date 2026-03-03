@@ -5,6 +5,11 @@
 	"engines": {
 		"node": "24.x"
 	},
+	"pnpm": {
+		"overrides": {
+			"@isaacs/brace-expansion": "^2.0.1"
+		}
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
