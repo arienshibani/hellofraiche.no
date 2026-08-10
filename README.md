@@ -1,3 +1,5 @@
+
+
 # Hallo Fraiche 🥛
 
 Weekly meal plan services such as [HelloFresh](https://www.hellofresh.no/) and [Adams](https://www.adamsmatkasse.no/) are expensive. So I'm compiling my own list of tasty, budget-friendly recipes to help plan my weekly meals.
@@ -17,7 +19,7 @@ Weekly meal plan services such as [HelloFresh](https://www.hellofresh.no/) and [
 
 * Make sure you have [Node](https://nodejs.org/en/download) installed.
 
-1. ✨ Clone repo `git clone https://github.com/arienshibani/hallofresh.no`
+1. ✨ Clone repo `git clone https://github.com/arienshibani/hellofraiche.no`
 
 2. 🏗️ Navigate into repo and install deps `npm install`
 
